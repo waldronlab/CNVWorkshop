@@ -2,15 +2,15 @@
 
 # Instructor(s) name(s) and contact information
 
-Ludwig Geistlinger, Marcel Ramos, Seyhun Oh, and Levi Waldron
+Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 
 CUNY School of Public Health
 55 W 125th St, New York, NY 10027
 
-Ludwig.Geistlinger@sph.cuny.edu
-Marcel.Ramos@sph.cuny.edu
-Seyhun.Oh@sph.cuny.edu
-Levi.Waldron@sph.cuny.edu
+Ludwig.Geistlinger@sph.cuny.edu  
+Marcel.Ramos@sph.cuny.edu   
+Sehyun.Oh@sph.cuny.edu   
+Levi.Waldron@sph.cuny.edu   
 
 # Workshop Description
 
@@ -26,7 +26,7 @@ CNV calls across a population, overlap analysis with functional genomic regions
 and regulatory elements, expression quantitative trait loci (eQTL) analysis, 
 and genome-wide association analysis (GWAS) with quantitative phenotypes.
 As an advanced application example, the workshop also introduces allele-specific 
-absolute copy number analysis and how it is incorporated in genomic cancer analysis 
+absolute copy number analysis and how it is incorporated in cancer genomic analysis 
 for the estimation of tumor characteristics such as tumor purity and ploidy. 
 
 # Pre-requisites
@@ -72,7 +72,7 @@ Execution of example code and hands-on practice
   genomic regions
 * learn how carry out association analysis with gene expression and quantitative
   phenotypes
-* get familiar with allele-specific absolute CN analysis of genomic cancer data 
+* get familiar with allele-specific absolute CN analysis of cancer genomic data 
  
 # Specific objectives
 
