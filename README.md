@@ -63,30 +63,30 @@ Execution of example code and hands-on practice
 
 # Learning Goals
 
-* get familiar with elementary concepts of CNV analysis
-* learn how to efficiently represent, access, and manipulate CNV data 
+* Gain familiarity with elementary concepts of CNV analysis
+* Learn how to efficiently represent, access, and manipulate CNV data 
   in Bioconductor data structures
-* get familiar with different strategies for summarizing individual CNV
+* Gain familiarity with different strategies for summarizing individual CNV
   calls across a population
-* learn how to assess the significance of overlaps between CNVs and functional
+* Learn how to assess the significance of overlaps between CNVs and functional
   genomic regions
-* learn how carry out association analysis with gene expression and quantitative
+* Learn how carry out association analysis with gene expression and quantitative
   phenotypes
-* get familiar with allele-specific absolute CN analysis of cancer genomic data 
+* Gain familiarity with allele-specific absolute CN analysis of cancer genomic data 
+* Understand how CNVs can be experimentally detected and computationally inferred
+  from SNP arrays and next-generation sequencing data
  
 # Specific objectives
 
-* understand how CNVs can be experimentally detected and computationally inferred
-  from SNP arrays and next-generation sequencing data
-* learn how to use `GRangesList` and `RaggedExperiment` to represent, access, and 
+* Use `GRangesList` and `RaggedExperiment` to represent, access, and 
   manipulate CNV data 
-* understand different strategies for finding recurrent CNV regions in a population,
+* Identify recurrent CNV regions in a population,
   including density trimming, reciprocal overlap, and recurrence significance estimation
-* learn how to use the [regioneR](http://bioconductor.org/packages/regioneR) package
+* Use the [regioneR](http://bioconductor.org/packages/regioneR) package
   to assess the significance of overlaps between CNVs and functional genomic regions
   such as genes, promoters, and enhancers.
-* learn how to carry out eQTL analysis for CNV and RNA-seq data
-* learn how to carry out a GWAS analysis for CNV and quantitative phenotype data
-* learn how to estimate tumor purity and ploidy from absolute CN analysis with 
+* Carry out eQTL analysis for CNV and RNA-seq data using `GenomicRanges` / `RaggedExperiment` / `CNVRanger` architecture
+* Carry out a GWAS analysis for CNV and quantitative phenotype data
+* Perform estimation of tumor purity and ploidy from absolute CN analysis with 
   [PureCN](http://bioconductor.org/packages/PureCN)
   
