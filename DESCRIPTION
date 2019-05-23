@@ -31,7 +31,6 @@ Imports:
     statmod
 Suggests:
     AnnotationHub,
-    BiocStyle,
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     BSgenome.Btaurus.UCSC.bosTau6.masked, 
     knitr,

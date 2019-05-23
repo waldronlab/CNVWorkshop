@@ -1,43 +1,16 @@
 ---
-title: "Copy number variation analysis with Bioconductor"
-author:
-  - name: Ludwig Geistlinger
-    affiliation: School of Public Health, City University of New York, New York
-    email: Ludwig.Geistlinger@sph.cuny.edu
-  - name: Marcel Ramos
-    affiliation: School of Public Health, City University of New York, New York
-    email: Marcel.Ramos@sph.cuny.edu
-  - name: Seyhun Oh
-    affiliation: School of Public Health, City University of New York, New York
-    email: Seyhun.Oh@sph.cuny.edu
-  - name: Levi Waldron
-    affiliation: School of Public Health, City University of New York, New York
-    email: Levi.Waldron@sph.cuny.edu
-abstract: >
-    This workshop gives an overview of Bioconductor solutions for the 
-    analysis of copy number variation (CNV) data. 
-    The workshop introduces Bioconductor core data structures for efficient 
-    representation, access, and manipulation of CNV data, and how to use these
-    containers for structured downstream analysis of CNVs and integration with gene 
-    expression and quantitative phenotypes. 
-    Participants will be provided with code and hands-on practice for a comprehensive 
-    set of typical analysis steps including exploratory analysis, summarizing individual 
-    CNV calls across a population, overlap analysis with functional genomic regions 
-    and regulatory elements, expression quantitative trait loci (eQTL) analysis, 
-    and genome-wide association analysis (GWAS) with quantitative phenotypes.
-    As an advanced application example, the workshop also introduces allele-specific 
-    absolute copy number analysis and how it is incorporated in genomic cancer analysis 
-    for the estimation of tumor characteristics such as tumor purity and ploidy.
 output:
-  BiocStyle::html_document:
+  rmarkdown::html_document:
+    highlight: pygments
     toc: true
-    toc_depth: 2
+    toc_depth: 3
+    fig_width: 5
 vignette: >
   % \VignetteIndexEntry{Copy number variation analysis with Bioconductor}
   % \VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding[utf8]{inputenc}  
 ---
 
-<!--
 # Copy number variation analysis with Bioconductor
 
 ## Instructor(s) name(s) and contact information
@@ -68,7 +41,6 @@ and genome-wide association analysis (GWAS) with quantitative phenotypes.
 As an advanced application example, the workshop also introduces allele-specific 
 absolute copy number analysis and how it is incorporated in genomic cancer analysis 
 for the estimation of tumor characteristics such as tumor purity and ploidy. 
--->
 
 # Wokshop information
 
@@ -165,7 +137,7 @@ Further information can be found in the
 [vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html)
 
 # Integrative downstream analysis of CNVs with CNVRanger
-The key parts of the functionality implemented in CNVRanger were developed,
+The key parts of the functionality implemented in `CNVRanger` were developed,
 described, and applied in several previous studies:
 
 - Genome-wide detection of CNVs and their association with meat tenderness in 
@@ -179,8 +151,8 @@ described, and applied in several previous studies:
 - CNVs are associated with genomic architecture in a songbird 
     [da Silva et al., 2018](https://doi.org/10.1186/s12864-018-4577-1)
 
-The `r Biocpkg("CNVRanger")` package implements three frequently used
-approaches for summarizing CNV calls:
+The [CNVRanger](http://bioconductor.org/packages/CNVRanger) package implements 
+three frequently used approaches for summarizing CNV calls:
 
 1. The [CNVRuler](http://www.ircgp.com/CNVRuler) procedure that trims region 
    margins based on regional density 
@@ -192,19 +164,21 @@ approaches for summarizing CNV calls:
    identifies recurrent CNV regions 
    [Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104).
 
-In addition, `r Biocpkg("CNVRanger")` provides functionality for the analysis of the 
+In addition, `CNVRanger` provides functionality for the analysis of the 
 overlap of CNVs with functional genomic regions such as genes, promoters, and enhancers. 
 The package also implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis for CNVs 
-by interfacing with the `r Biocpkg("edgeR")` package with convenient options
+by interfacing with the [edgeR](http://bioconductor.org/packages/edgeR) package 
+with convenient options
 for common analyses including restriction by genomic regions and cis-eQTLs.
-Similarly, `r Biocpkg("CNVRanger")` also interfaces with 
+Similarly, `CNVRanger` also interfaces with 
 [PLINK](http://zzz.bwh.harvard.edu/plink), thereby enabling traditional genome-wide 
 association studies (GWAS) between CNVs and quantitative phenotypes.
 
 ## Reading and accessing CNV data
 
-The `r Biocpkg("CNVRanger")` package uses Bioconductor core data structures 
-implemented in the `r Biocpkg("GenomicRanges")` and `r Biocpkg("RaggedExperiment")` 
+`CNVRanger` uses Bioconductor core data structures 
+implemented in the [GenomicRanges](http://bioconductor.org/packages/GenomicRanges) 
+and [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment) 
 packages to represent, access, and manipulate CNV data.
 
 We start by loading the package.
@@ -250,7 +224,7 @@ grl
 
 The advantage of representing the CNV calls as a `GRangesList` is that it allows
 to leverage the comprehensive set of operations on genomic regions implemented 
-in the `r Biocpkg("GenomicRanges")` packages - for instance, sorting of the calls 
+in the `GenomicRanges` package - for instance, sorting of the calls 
 according to their genomic coordinates.
 
 ```{r sortCalls}
@@ -261,8 +235,9 @@ grl
 ### Representation as a `RaggedExperiment`
 
 An alternative matrix-like representation of the CNV calls can be obtained with 
-the `r Biocpkg("RaggedExperiment")` data class. 
-It resembles in many aspects the `r Biocpkg("SummarizedExperiment")`
+the `RaggedExperiment` data class. 
+It resembles in many aspects the 
+[SummarizedExperiment](http://bioconductor.org/packages/SummarizedExperiment)
 data class for storing gene expression data as e.g. obtained with RNA-seq. 
 
 ```{r RaggedExperiment}
@@ -279,7 +254,7 @@ easily accessed and subsetted.
 assay(ra[1:5,1:5])
 ```
 
-As with `r Biocpkg("SummarizedExperiment")` objects, additional information for 
+As with `SummarizedExperiment` objects, additional information for 
 the samples are annotated in the `colData` slot.
 For example, we annotate the steer weight and its feed conversion ratio (FCR) 
 using simulated data.
@@ -326,20 +301,6 @@ Note that CNV frequency (number of samples overlapping each region) and CNV type
 (gain, loss, or both) have also been annotated in the columns `freq` and `type`,
 respectively.
 
-### Reciprocal overlap
-
-We also provide an implementation of the _Reciprocal Overlap (RO)_ procedure that 
-requires calls to sufficiently overlap with one another as e.g. used by 
-[Conrad et al., 2010](https://doi.org/10.1038/nature08516).
-This merges calls with an RO above a threshold as given by the `ro.thresh` argument.
-For example, an RO of 0.51 between two genomic regions _A_ and _B_ requires that 
-_B_ overlaps at least 51\% of _A_, *and* that _A_ also overlaps at least 51\% of _B_.
-
-```{r cnvrsRO}
-ro.cnvrs <- populationRanges(grl[1:100], mode="RO", ro.thresh=0.51)
-ro.cnvrs
-```
-
 ### Identifying recurrent regions
 
 In particular in cancer, it is important to distinguish driver from 
@@ -374,7 +335,9 @@ As a certain amount of overlap can be expected just by chance, an assessment of
 statistical significance is needed to decide whether the observed overlap is 
 greater (enrichment) or less (depletion) than expected by chance. 
 
-The `r Biocpkg("regioneR")` package implements a general framework for testing 
+The 
+[regioneR](http://bioconductor.org/packages/regioneR) 
+package implements a general framework for testing 
 overlaps of genomic regions based on permutation sampling.
 This allows to repeatedly sample random regions from the genome, matching size 
 and chromosomal distribution of the region set under study (here: the CNV regions).
@@ -464,8 +427,8 @@ genetic variants that explain variation in gene expression levels
 Mainly applied in the context of SNPs, the concept also naturally extends to the
 analysis of CNVs. 
 
-The `r Biocpkg("CNVRanger")` package implements association testing between CNV 
-regions and RNA-seq read counts using `r Biocpkg("edgeR")`, which applies 
+The `CNVRanger` package implements association testing between CNV 
+regions and RNA-seq read counts using `edgeR`, which applies 
 generalized linear models based on the negative-binomial distribution 
 while incorporating normalization factors for different library sizes.
 
@@ -491,7 +454,7 @@ rcounts[1:5, 1:5]
 ```
 
 For demonstration, we restrict analysis to the 939 genes on chromosome 1 and 2, 
-and store the RNA-seq expression data in a `r Biocpkg("SummarizedExperiment")`.
+and store the RNA-seq expression data in a `SummarizedExperiment`.
 
 ```{r rse}
 library(SummarizedExperiment)
@@ -533,19 +496,22 @@ res
 
 The resulting `DataFrame` contains in the first column the CNV regions tested. 
 The second column contains the genes tested in the genomic window around each CNV 
-region, and the other columns report (i) log2 fold change with respect to the 2n group, (ii) edgeR's DE _p_-value, and (iii) the (per default) Benjamini-Hochberg adjusted _p_-value. 
+region, and the other columns report (i) log2 fold change with respect to the 
+2n group, (ii) edgeR's DE _p_-value, and (iii) the (per default) Benjamini-Hochberg adjusted _p_-value. 
 
 ### Dealing with TCGA data stored in a `MultiAssayExperiment`
 
 In the previous section, we individually prepared the CNV and RNA-seq data for 
 CNV-expression association analysis.
 In the following, we demonstrate how to perform an integrated preparation of the
-two assays when stored in a `r Biocpkg("MultiAssayExperiment")`.
+two assays when stored in a 
+[MultiAssayExperiment](http://bioconductor.org/packages/MultiAssayExperiment)
 We therefore consider glioblastoma 
 [GBM](https://cancergenome.nih.gov/cancersselected/glioblastomamultiforme) 
 data from 
 The Cancer Genome Atlas [TCGA](https://cancergenome.nih.gov), 
-which can conveniently be accessed with the `r Biocpkg("curatedTCGAData")` package.
+which can conveniently be accessed with the 
+[curatedTCGAData](http://bioconductor.org/packages/curatedTCGAData) package.
 
 ```{r tcgaSetup}
 library(curatedTCGAData)
@@ -567,7 +533,8 @@ The returned `MultiAssayExperiment` contains three assays:
     (`GBM_RNASeq2GeneNorm`).
 
 To annotate the genomic coordinates of the genes measured in the RNA-seq assay, 
-we use the function `symbolsToRanges` from the `r Biocpkg("TCGAutils")` package.
+we use the function `symbolsToRanges` from the 
+[TCGAutils](http://bioconductor.org/packages/TCGAutils) package.
 For demonstration, we restrict the analysis to chromosome 1 and 2. 
 
 ```{r tcgaGeneAnno}
@@ -586,7 +553,7 @@ gbm
 We now restrict the analysis to intersecting patients of the three assays 
 using `MultiAssayExperiment`'s `intersectColumns` function, and select 
 _Primary Solid Tumor_ samples using the `splitAssays` function from the 
-`r Biocpkg("TCGAutils")` package.
+`TCGAutils` package.
 
 ```{r gbmIntersect}
 gbm <- intersectColumns(gbm)
