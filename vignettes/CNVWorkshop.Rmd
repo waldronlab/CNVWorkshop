@@ -1,0 +1,638 @@
+---
+title: "Copy number variation analysis with Bioconductor"
+author:
+  - name: Ludwig Geistlinger
+    affiliation: School of Public Health, City University of New York, New York
+    email: Ludwig.Geistlinger@sph.cuny.edu
+  - name: Marcel Ramos
+    affiliation: School of Public Health, City University of New York, New York
+    email: Marcel.Ramos@sph.cuny.edu
+  - name: Seyhun Oh
+    affiliation: School of Public Health, City University of New York, New York
+    email: Seyhun.Oh@sph.cuny.edu
+  - name: Levi Waldron
+    affiliation: School of Public Health, City University of New York, New York
+    email: Levi.Waldron@sph.cuny.edu
+abstract: >
+    This workshop gives an overview of Bioconductor solutions for the 
+    analysis of copy number variation (CNV) data. 
+    The workshop introduces Bioconductor core data structures for efficient 
+    representation, access, and manipulation of CNV data, and how to use these
+    containers for structured downstream analysis of CNVs and integration with gene 
+    expression and quantitative phenotypes. 
+    Participants will be provided with code and hands-on practice for a comprehensive 
+    set of typical analysis steps including exploratory analysis, summarizing individual 
+    CNV calls across a population, overlap analysis with functional genomic regions 
+    and regulatory elements, expression quantitative trait loci (eQTL) analysis, 
+    and genome-wide association analysis (GWAS) with quantitative phenotypes.
+    As an advanced application example, the workshop also introduces allele-specific 
+    absolute copy number analysis and how it is incorporated in genomic cancer analysis 
+    for the estimation of tumor characteristics such as tumor purity and ploidy.
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  % \VignetteIndexEntry{Copy number variation analysis with Bioconductor}
+  % \VignetteEngine{knitr::rmarkdown}
+---
+
+<!--
+# Copy number variation analysis with Bioconductor
+
+## Instructor(s) name(s) and contact information
+
+Ludwig Geistlinger, Marcel Ramos, Seyhun Oh, and Levi Waldron
+
+CUNY School of Public Health
+55 W 125th St, New York, NY 10027
+
+Ludwig.Geistlinger@sph.cuny.edu
+Marcel.Ramos@sph.cuny.edu
+Seyhun.Oh@sph.cuny.edu
+Levi.Waldron@sph.cuny.edu
+
+## Workshop Description
+
+This workshop gives an overview of Bioconductor solutions for the analysis of 
+copy number variation (CNV) data. 
+The workshop introduces Bioconductor core data structures for efficient 
+representation, access, and manipulation of CNV data, and how to use these
+containers for structured downstream analysis of CNVs and integration with gene 
+expression and quantitative phenotypes. 
+Participants will be provided with code and hands-on practice for a comprehensive 
+set of typical analysis steps including exploratory analysis, summarizing individual 
+CNV calls across a population, overlap analysis with functional genomic regions 
+and regulatory elements, expression quantitative trait loci (eQTL) analysis, 
+and genome-wide association analysis (GWAS) with quantitative phenotypes.
+As an advanced application example, the workshop also introduces allele-specific 
+absolute copy number analysis and how it is incorporated in genomic cancer analysis 
+for the estimation of tumor characteristics such as tumor purity and ploidy. 
+-->
+
+# Wokshop information
+
+## Pre-requisites
+
+* Basic knowledge of R syntax
+* Familiarity with the SummarizedExperiment class
+* Familiarity with the GenomicRanges class
+
+* Familiarity with high-throughput genomic assays such as microarrays and 
+  next-generation sequencing
+* Familiarity with the biological definition of single nucleotide polymorphism 
+  (SNP) and copy number variation (CNV) 
+
+## Workshop Participation
+
+Execution of example code and hands-on practice
+
+## _R_ / _Bioconductor_ packages used
+
+* [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment)
+* [CNVRanger](http://bioconductor.org/packages/CNVRanger)
+* [regioneR](http://bioconductor.org/packages/regioneR)
+* [PureCN](http://bioconductor.org/packages/PureCN)
+
+## Time outline
+
+| Activity                                              | Time |
+|-------------------------------------------------------|------|
+| Overview                                              | 5m   |
+| Data representation and manipulation                  | 20m  |
+| Integrative downstream analysis (eQTL, GWAS, ...)     | 20m  |
+| Allele-specific CN analysis in cancer                 | 15m  |
+
+
+## Learning Goals
+
+* get familiar with elementary concepts of CNV analysis
+* learn how to efficiently represent, access, and manipulate CNV data 
+  in Bioconductor data structures
+* get familiar with different strategies for summarizing individual CNV
+  calls across a population
+* learn how to assess the significance of overlaps between CNVs and functional
+  genomic regions
+* learn how carry out association analysis with gene expression and quantitative
+  phenotypes
+* get familiar with allele-specific absolute CN analysis of genomic cancer data 
+ 
+## Specific objectives
+
+* understand how CNVs can be experimentally detected and computationally inferred
+  from SNP arrays and next-generation sequencing data
+* learn how to use `GRangesList` and `RaggedExperiment` to represent, access, and 
+  manipulate CNV data 
+* understand different strategies for finding recurrent CNV regions in a population,
+  including density trimming, reciprocal overlap, and recurrence significance estimation
+* learn how to use the [regioneR](http://bioconductor.org/packages/regioneR) package
+  to assess the significance of overlaps between CNVs and functional genomic regions
+  such as genes, promoters, and enhancers.
+* learn how to carry out eQTL analysis for CNV and RNA-seq data
+* learn how to carry out a GWAS analysis for CNV and quantitative phenotype data
+* learn how to estimate tumor purity and ploidy from absolute CN analysis with 
+  [PureCN](http://bioconductor.org/packages/PureCN)
+ 
+# Overview
+
+```{r setup, echo=FALSE}
+suppressPackageStartupMessages({ 
+    library(CNVRanger)
+    library(AnnotationHub)
+    library(regioneR)
+    library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+    library(SummarizedExperiment)
+    library(curatedTCGAData)
+    library(TCGAutils)
+})
+```
+
+Copy number variation (CNV) is a frequently observed deviation from the diploid 
+state due to duplication or deletion of genomic regions.
+CNVs can be experimentally detected based on comparative genomic hybridization, 
+and computationally inferred from SNP-arrays or next-generation sequencing data.
+These technologies for CNV detection have in common that they report, for each
+sample under study, genomic regions that are duplicated or deleted with respect 
+to a reference. 
+Such regions are denoted as _CNV calls_ in the following and will be considered 
+the starting point for analysis.  
+
+# Representation and manipulation of CNV data with RaggedExperiment 
+
+[RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment)
+
+Further information can be found in the 
+[vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html)
+
+# Integrative downstream analysis of CNVs with CNVRanger
+The key parts of the functionality implemented in CNVRanger were developed,
+described, and applied in several previous studies:
+
+- Genome-wide detection of CNVs and their association with meat tenderness in 
+    Nelore cattle
+    [da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)
+
+- Widespread modulation of gene expression by copy number variation in skeletal 
+    muscle
+    [Geistlinger et al., 2018](https://doi.org/10.1038/s41598-018-19782-4)
+
+- CNVs are associated with genomic architecture in a songbird 
+    [da Silva et al., 2018](https://doi.org/10.1186/s12864-018-4577-1)
+
+The `r Biocpkg("CNVRanger")` package implements three frequently used
+approaches for summarizing CNV calls:
+
+1. The [CNVRuler](http://www.ircgp.com/CNVRuler) procedure that trims region 
+   margins based on regional density 
+   [Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239), 
+2. the reciprocal overlap (RO) procedure that requires calls to sufficiently 
+   overlap with one another 
+   [Conrad et al., 2010](https://doi.org/10.1038/nature08516), and
+3. the [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) procedure that
+   identifies recurrent CNV regions 
+   [Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104).
+
+In addition, `r Biocpkg("CNVRanger")` provides functionality for the analysis of the 
+overlap of CNVs with functional genomic regions such as genes, promoters, and enhancers. 
+The package also implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis for CNVs 
+by interfacing with the `r Biocpkg("edgeR")` package with convenient options
+for common analyses including restriction by genomic regions and cis-eQTLs.
+Similarly, `r Biocpkg("CNVRanger")` also interfaces with 
+[PLINK](http://zzz.bwh.harvard.edu/plink), thereby enabling traditional genome-wide 
+association studies (GWAS) between CNVs and quantitative phenotypes.
+
+## Reading and accessing CNV data
+
+The `r Biocpkg("CNVRanger")` package uses Bioconductor core data structures 
+implemented in the `r Biocpkg("GenomicRanges")` and `r Biocpkg("RaggedExperiment")` 
+packages to represent, access, and manipulate CNV data.
+
+We start by loading the package.
+
+```{r lib}
+library(CNVRanger)
+```
+
+### Input data format
+
+For demonstration, we consider CNV calls as obtained with 
+[PennCNV](http://penncnv.openbioinformatics.org) from SNP-chip data in a 
+Brazilian cattle breed 
+([da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)).
+
+Here, we use a data subset and only consider CNV calls on chromosome 1 and 2,
+for which there are roughly 3000 CNV calls as obtained for 711 samples. 
+
+```{r readCalls}
+data.dir <- system.file("extdata", package="CNVRanger")
+call.file <- file.path(data.dir, "Silva16_PONE_CNV_calls.csv")
+calls <- read.csv(call.file, as.is=TRUE)
+nrow(calls)
+head(calls)
+```
+
+```{r nrSamples}
+length(unique(calls[,"NE_id"]))
+```
+
+### Representation as a `GRangesList`
+
+We group the calls by sample ID, resulting in a `GRangesList`.
+Each element of the list corresponds to a sample, and contains the genomic 
+coordinates of the CNV calls for this sample (along with the copy number state 
+in the `State` metadata column).  
+
+```{r cnvCalls}
+grl <- makeGRangesListFromDataFrame(calls, 
+    split.field="NE_id", keep.extra.columns=TRUE)
+grl
+```
+
+The advantage of representing the CNV calls as a `GRangesList` is that it allows
+to leverage the comprehensive set of operations on genomic regions implemented 
+in the `r Biocpkg("GenomicRanges")` packages - for instance, sorting of the calls 
+according to their genomic coordinates.
+
+```{r sortCalls}
+grl <- sort(grl)
+grl
+```
+
+### Representation as a `RaggedExperiment`
+
+An alternative matrix-like representation of the CNV calls can be obtained with 
+the `r Biocpkg("RaggedExperiment")` data class. 
+It resembles in many aspects the `r Biocpkg("SummarizedExperiment")`
+data class for storing gene expression data as e.g. obtained with RNA-seq. 
+
+```{r RaggedExperiment}
+ra <- RaggedExperiment(grl)
+ra
+```
+
+As apparent from the `dim` slot of the object, it stores the CNV calls in the 
+rows and the samples in the columns. 
+Note that the CN state is now represented as an assay matrix which can be 
+easily accessed and subsetted.   
+
+```{r RaggedExperiment-assay}
+assay(ra[1:5,1:5])
+```
+
+As with `r Biocpkg("SummarizedExperiment")` objects, additional information for 
+the samples are annotated in the `colData` slot.
+For example, we annotate the steer weight and its feed conversion ratio (FCR) 
+using simulated data.
+Feed conversion ratio is the ratio of dry matter intake to live-weight gain. 
+A typical range of feed conversion ratios is 4.5-7.5 with a lower number being 
+more desirable as it would indicate that a steer required less feed per pound of
+gain.
+
+```{r RaggedExperiment-colData}
+weight <- rnorm(ncol(ra), mean=1100, sd=100)
+fcr <- rnorm(ncol(ra), mean=6, sd=1.5)
+colData(ra)$weight <- round(weight, digits=2)
+colData(ra)$fcr <- round(fcr, digits=2)
+colData(ra)
+```
+
+## Summarizing individual CNV calls across a population
+
+In CNV analysis, it is often of interest to summarize individual calls across
+the population, (i.e. to define CNV regions), for subsequent association
+analysis with expression and phenotype data.
+In the simplest case, this just merges overlapping individual calls into 
+summarized regions.
+However, this typically inflates CNV region size, and more appropriate approaches
+have been developed for this purpose.
+
+### Trimming low-density areas
+
+Here, we use the approach from [CNVRuler](http://www.ircgp.com/CNVRuler) 
+to summarize CNV calls to CNV regions (see 
+[Figure 1](https://academic.oup.com/view-large/figure/83392426/bts239f1.jpeg)
+in 
+[Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239)
+for an illustration of the approach). 
+This trims low-density areas as defined by the `density` argument, 
+which is set here to <10\% of the number of calls within a summarized region.
+
+```{r cnvrs}
+cnvrs <- populationRanges(grl, density=0.1)
+cnvrs
+```
+
+Note that CNV frequency (number of samples overlapping each region) and CNV type
+(gain, loss, or both) have also been annotated in the columns `freq` and `type`,
+respectively.
+
+### Reciprocal overlap
+
+We also provide an implementation of the _Reciprocal Overlap (RO)_ procedure that 
+requires calls to sufficiently overlap with one another as e.g. used by 
+[Conrad et al., 2010](https://doi.org/10.1038/nature08516).
+This merges calls with an RO above a threshold as given by the `ro.thresh` argument.
+For example, an RO of 0.51 between two genomic regions _A_ and _B_ requires that 
+_B_ overlaps at least 51\% of _A_, *and* that _A_ also overlaps at least 51\% of _B_.
+
+```{r cnvrsRO}
+ro.cnvrs <- populationRanges(grl[1:100], mode="RO", ro.thresh=0.51)
+ro.cnvrs
+```
+
+### Identifying recurrent regions
+
+In particular in cancer, it is important to distinguish driver from 
+passenger mutations, i.e. to distinguish meaningful events from random 
+background aberrations. 
+The [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) method identifies 
+those regions of the genome that are aberrant more often than would be expected 
+by chance, with greater weight given to high amplitude events 
+(high-level copy-number gains or homozygous deletions) that are less likely to 
+represent random aberrations 
+([Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104)).
+
+By setting `est.recur=TRUE`, we deploy a `GISTIC`-like significance estimation 
+
+```{r gistic}
+cnvrs <- populationRanges(grl, density=0.1, est.recur=TRUE)
+cnvrs
+```
+
+and filter for recurrent CNVs that exceed a significance threshold of 0.05. 
+
+```{r recurr}
+cnvrs[cnvrs$pvalue < 0.05]
+```
+
+## Overlap analysis of CNVs with functional genomic regions
+
+Once individual CNV calls have been summarized across the population, it is 
+typically of interest whether the resulting CNV regions overlap with functional 
+genomic regions such as genes, promoters, or enhancers. 
+As a certain amount of overlap can be expected just by chance, an assessment of 
+statistical significance is needed to decide whether the observed overlap is 
+greater (enrichment) or less (depletion) than expected by chance. 
+
+The `r Biocpkg("regioneR")` package implements a general framework for testing 
+overlaps of genomic regions based on permutation sampling.
+This allows to repeatedly sample random regions from the genome, matching size 
+and chromosomal distribution of the region set under study (here: the CNV regions).
+By recomputing the overlap with the functional features in each permutation, 
+statistical significance of the observed overlap can be assessed.
+
+We demonstrate in the following how this strategy can be used to assess the 
+overlap between the detected CNV regions and protein-coding regions in the 
+cattle genome. 
+We expect to find a depletion as protein-coding regions are highly conserved and
+rarely subject to long-range structural variation such as CNV. 
+Hence, is the overlap between CNVs and protein-coding genes less than expected by
+chance?
+
+To obtain the location of protein-coding genes, we query available 
+_Bos taurus_ annotation from Ensembl 
+
+```{r getBtGenes}
+library(AnnotationHub)
+ah <- AnnotationHub()
+ahDb <- query(ah, pattern = c("Bos taurus", "EnsDb"))
+ahDb
+```
+
+and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).
+
+```{r getBtGenes2}
+ahEdb <- ahDb[["AH60948"]]
+bt.genes <- genes(ahEdb)
+seqlevels(bt.genes) <- paste0("chr", seqlevels(bt.genes))
+bt.genes
+```
+
+To speed up the example, we restrict analysis to chromosomes 1 and 2. 
+
+```{r formatBtGenes}
+sel.genes <- bt.genes[seqnames(bt.genes) %in% c("chr1", "chr2")]
+sel.genes <- sel.genes[sel.genes$gene_biotype == "protein_coding"]
+sel.cnvrs <- cnvrs[seqnames(cnvrs) %in% c("chr1", "chr2")]
+```
+
+Now, we are applying an overlap permutation test with 100 permutations
+(`ntimes=100`), while maintaining chromosomal distribution of the CNV
+region set (`per.chromosome=TRUE`). 
+Furthermore, we use the option `count.once=TRUE` to count an overlapping CNV 
+region only once, even if it overlaps with 2 or more genes.
+We also allow random regions to be sampled from the entire genome (`mask=NA`),
+although in certain scenarios masking certain regions such as telomeres and 
+centromeres is advisable.
+Also note that we use 100 permutations for demonstration only.
+To draw robust conclusions a minimum of 1000 permutations should be carried out.
+
+```{r ovlpTest}
+library(regioneR)
+library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+res <- suppressWarnings(overlapPermTest(A=sel.cnvrs, B=sel.genes, ntimes=100, 
+    genome="bosTau6", mask=NA, per.chromosome=TRUE, count.once=TRUE))
+res
+```
+
+```{r permDist}
+summary(res[[1]]$permuted)
+```
+
+The resulting permutation *p*-value indicates a significant depletion. Out of
+the `r length(sel.cnvrs)` CNV regions, `r res[[1]]$observed` overlap with at 
+least one gene. 
+In contrast, when repeatedly drawing random regions matching the CNV regions in 
+size and chromosomal distribution, the mean number of overlapping
+regions across permutations was `r round(mean(res[[1]]$permuted), digits=1)` 
+$\pm$ `r round(sd(res[[1]]$permuted), digits=1)`.
+
+This finding is consistent with our observations across the whole genome
+([da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)) 
+and findings from the 1000 Genomes Poject 
+([Sudmant et al., 2015](https://www.nature.com/articles/nature15394)).
+
+Note: the function `regioneR::permTest` allows to incorporate user-defined
+functions for randomizing regions and evaluating additional measures of overlap
+such as total genomic size in bp.
+
+## CNV-expression association analysis
+
+Studies of expression quantitative trait loci (eQTLs) aim at the discovery of 
+genetic variants that explain variation in gene expression levels 
+([Nica and Dermitzakis, 2013](https://www.ncbi.nlm.nih.gov/pubmed/23650636)).
+Mainly applied in the context of SNPs, the concept also naturally extends to the
+analysis of CNVs. 
+
+The `r Biocpkg("CNVRanger")` package implements association testing between CNV 
+regions and RNA-seq read counts using `r Biocpkg("edgeR")`, which applies 
+generalized linear models based on the negative-binomial distribution 
+while incorporating normalization factors for different library sizes.
+
+In the case of only one CN state deviating from 2n for a CNV region under 
+investigation, this reduces to the classical 2-group
+comparison.  For more than two states (e.g. 0n, 1n, 2n), edgeR’s
+ANOVA-like test is applied to test all deviating groups for
+significant expression differences relative to 2n.
+
+### Dealing with individual CNV and RNA-seq assays
+
+We demonstrate the functionality by loading RNA-seq read count data from 
+skeletal muscle samples for 183 Nelore cattle steers, which we analyzed for 
+CNV-expression effects as previously described 
+([Geistlinger et al., 2018](https://doi.org/10.1038/s41598-018-19782-4)).
+
+```{r rseqdata}
+rseq.file <- file.path(data.dir, "counts_cleaned.txt")
+rcounts <- read.delim(rseq.file, row.names=1, stringsAsFactors=FALSE)
+rcounts <- as.matrix(rcounts)
+dim(rcounts)
+rcounts[1:5, 1:5]
+```
+
+For demonstration, we restrict analysis to the 939 genes on chromosome 1 and 2, 
+and store the RNA-seq expression data in a `r Biocpkg("SummarizedExperiment")`.
+
+```{r rse}
+library(SummarizedExperiment)
+rse <- SummarizedExperiment(assays=list(rcounts=rcounts), 
+                rowRanges=granges(sel.genes)[rownames(rcounts)])
+rse
+```
+
+Assuming distinct modes of action, effects observed in the CNV-expression analysis 
+are typically divided into (i) local effects (*cis*), where expression changes 
+coincide with CNVs in the respective genes, and (ii) distal effects (*trans*), where
+CNVs supposedly affect trans-acting regulators such as transcription factors.
+
+However, due to power considerations and to avoid detection of spurious effects,
+stringent filtering of (i) not sufficiently expressed genes, and (ii) CNV regions
+with insufficient sample size in groups deviating from 2n, should be carried out 
+when testing for distal effects. 
+Local effects have a clear spatial indication and the number of genes locating 
+in or close to a CNV region of interest is typically small; testing for 
+differential expression between CN states is thus generally better powered for 
+local effects and less stringent filter criteria can be applied. 
+
+In the following, we carry out CNV-expression association analysis by providing 
+the CNV regions to test (`cnvrs`), the individual CNV calls (`grl`) to determine 
+per-sample CN state in each CNV region, the RNA-seq read counts (`rse`),
+and the size of the genomic window around each CNV region (`window`).
+The `window` argument thereby determines which genes are considered for testing 
+for each CNV region and is set here to 1 Mbp. 
+
+Further, use the `min.cpm` and `min.samples` arguments to exclude from the 
+analysis (i) genes with fewer than `min.cpm` reads per million reads mapped 
+(cpm, counts per million), and (ii) CNV 
+regions with fewer than `min.samples` samples in a group deviating from 2n.
+
+```{r cnvEQTL}
+res <- cnvEQTL(cnvrs, grl, rse, window="1Mbp", verbose=TRUE)
+res
+```
+
+The resulting `DataFrame` contains in the first column the CNV regions tested. 
+The second column contains the genes tested in the genomic window around each CNV 
+region, and the other columns report (i) log2 fold change with respect to the 2n group, (ii) edgeR's DE _p_-value, and (iii) the (per default) Benjamini-Hochberg adjusted _p_-value. 
+
+### Dealing with TCGA data stored in a `MultiAssayExperiment`
+
+In the previous section, we individually prepared the CNV and RNA-seq data for 
+CNV-expression association analysis.
+In the following, we demonstrate how to perform an integrated preparation of the
+two assays when stored in a `r Biocpkg("MultiAssayExperiment")`.
+We therefore consider glioblastoma 
+[GBM](https://cancergenome.nih.gov/cancersselected/glioblastomamultiforme) 
+data from 
+The Cancer Genome Atlas [TCGA](https://cancergenome.nih.gov), 
+which can conveniently be accessed with the `r Biocpkg("curatedTCGAData")` package.
+
+```{r tcgaSetup}
+library(curatedTCGAData)
+suppressMessages(
+    gbm <- curatedTCGAData("GBM", 
+        assays=c("GISTIC_Peaks", "CNVSNP", "RNASeq2GeneNorm"), 
+        dry.run=FALSE)
+)
+gbm
+```
+
+The returned `MultiAssayExperiment` contains three assays:
+
+- the SNP-based CNV calls stored in a `RaggedExperiment` (`GBM_CNVSNP`),
+- the recurrent CNV regions summarized across the population using the
+    [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) method 
+    (`GBM_GISTIC_Peaks`), and
+- the normalized RNA-seq gene expression values in a `SummarizedExperiment` 
+    (`GBM_RNASeq2GeneNorm`).
+
+To annotate the genomic coordinates of the genes measured in the RNA-seq assay, 
+we use the function `symbolsToRanges` from the `r Biocpkg("TCGAutils")` package.
+For demonstration, we restrict the analysis to chromosome 1 and 2. 
+
+```{r tcgaGeneAnno}
+library(TCGAutils)
+gbm <- suppressMessages(symbolsToRanges(gbm, unmapped=FALSE))
+for(i in 1:3) 
+{
+    genome(rowRanges(gbm[[i]])) <- "hg19"
+    seqlevelsStyle(rowRanges(gbm[[i]])) <- "UCSC"
+    ind <- as.character(seqnames(rowRanges(gbm[[i]]))) %in% c("chr1", "chr2")
+    gbm[[i]] <- gbm[[i]][ind,]
+}
+gbm
+```
+
+We now restrict the analysis to intersecting patients of the three assays 
+using `MultiAssayExperiment`'s `intersectColumns` function, and select 
+_Primary Solid Tumor_ samples using the `splitAssays` function from the 
+`r Biocpkg("TCGAutils")` package.
+
+```{r gbmIntersect}
+gbm <- intersectColumns(gbm)
+sampleTables(gbm)
+data(sampleTypes)
+sampleTypes
+gbm <- splitAssays(gbm, sampleCodes="01")
+gbm
+```
+
+We transform CN estimates into CN states where states are encoded as:
+
+- `0`: homozygous deletion (2-copy loss)
+- `1`: heterozygous deletion (1-copy loss)
+- `2`: normal diploid state
+- `3`: 1-copy gain
+- `4`: amplification (>= 2-copy gain)  
+
+```{r transformToStates}
+ind <- grep("CNVSNP", names(gbm))
+state <- round(mcols(gbm[[ind]])$Segment_Mean)
+state[state > 2] <- 2
+state[state < -2] <- -2
+mcols(gbm[[ind]])$State <- state + 2
+mcols(gbm[[ind]]) <- mcols(gbm[[ind]])[,3:1]
+table(mcols(gbm[[ind]])$State)
+```
+
+The data is now ready for CNV-expression association analysis, where we find 
+only two CNV regions with sufficient sample size for testing using the default
+value of 10 for the `minSamples` argument.
+
+```{r gbmEQTL}
+res <- cnvEQTL(cnvrs="01_GBM_GISTIC_Peaks-20160128", 
+    calls="01_GBM_CNVSNP-20160128", 
+    rcounts="01_GBM_RNASeq2GeneNorm-20160128_ranged", 
+    data=gbm, window="1Mbp", verbose=TRUE)
+res
+```
+
+# Allele-specific CN analysis with PureCN
+
+[PureCN](http://bioconductor.org/packages/PureCN)
+
+Further information can be found in the 
+[vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf)
+and [publication](https://doi.org/10.1186/s13029-016-0060-z).
+
+
