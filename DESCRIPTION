@@ -22,6 +22,7 @@ Depends:
     PureCN,
     RaggedExperiment,
     regioneR,
+    PureCN
 Imports:
     MultiAssayExperiment,
     SummarizedExperiment,
