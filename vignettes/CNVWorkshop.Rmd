@@ -192,7 +192,7 @@ rowRanges(ragexp)
 support transformation of data to matrix format with varying row dimensions.
 
 ```{r, echo=FALSE, fig.cap="RaggedExperiment object schematic. Rows and columns represent genomic ranges and samples, respectively. Assay operations can be performed with (from left to right) compactAssay, qreduceAssay, and sparseAssay.", out.width="\\maxwidth"}
-knitr::include_graphics("RaggedExperiment.png")
+knitr::include_graphics("vignettes/RaggedExperiment.png", package = "CNVWorkshop")
 ```
 
 The four main _Assay_ functions for converting to matrix are:
@@ -796,7 +796,7 @@ PureCN requires three raw inputs and subsequent preprocessing of them before per
 <br>
 
 ```{r echo=FALSE, out.width = '70%', fig.cap="Overview of CNV analysis workflow"}
-knitr::include_graphics("figures/overview_1.png")
+knitr::include_graphics(system.file("vignettes/overview_1.png", package = "CNVWorkshop"))
 ```
 
 <br>
@@ -873,14 +873,14 @@ Rscript $PURECN/PureCN.R \
 
 Here is the more detailed workflow diagram with the intermediate files described above.
 ```{r echo=FALSE, out.width = '180%', fig.cap="Overview of CNV analysis workflow with intermediates"}
-knitr::include_graphics("figures/overview_2.png")
+knitr::include_graphics(system.file("vignettes/overview_2.png", package = "CNVWorkshop"))
 ```
 
 <br>
 
 As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. 
 ```{r echo=FALSE, out.width = '180%', fig.cap="Requirement for production pipeline"}
-knitr::include_graphics("figures/overview_3.png")
+knitr::include_graphics(system.file("vignettes/overview_3.png", package = "CNVWorkshop"))
 ```
 
 ## Analysis examples
@@ -895,20 +895,20 @@ head(predictSomatic(ret), 3)
 ```
 
 ```{r echo=FALSE, out.width = '80%', fig.cap="Example of purity and ploidy estimates"}
-knitr::include_graphics("figures/puri_ploi.png")
+knitr::include_graphics(system.file("vignettes/puri_ploi.png", package = "CNVWorkshop"))
 ```
 
 ### TMB (Tumor mutation burden)
 TMB is the number of somatic mutations carried by tumor cells.
 ```{r TMB, echo=FALSE, out.width = '75%', fig.cap="Example of tumor mutation burden"}
-knitr::include_graphics("figures/TMB.png")
+knitr::include_graphics(system.file("vignettes/TMB.png", package = "CNVWorkshop"))
 ```
 
 ### Mutational signatures
 Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
 
 ```{r MutSig, echo=FALSE, out.width = '150%', fig.cap="Example of mutational signature"}
-knitr::include_graphics("figures/MutSig.png")
+knitr::include_graphics(system.file("vignettes/MutSig.png", package = "CNVWorkshop"))
 ```
 
 * Signature 3 has been found in breast, **ovarian**, and pancreatic cancers.   
