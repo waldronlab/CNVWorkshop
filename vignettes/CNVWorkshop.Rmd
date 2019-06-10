@@ -192,7 +192,7 @@ rowRanges(ragexp)
 support transformation of data to matrix format with varying row dimensions.
 
 ```{r, echo=FALSE, fig.cap="RaggedExperiment object schematic. Rows and columns represent genomic ranges and samples, respectively. Assay operations can be performed with (from left to right) compactAssay, qreduceAssay, and sparseAssay.", out.width="\\maxwidth"}
-knitr::include_graphics("vignettes/RaggedExperiment.png", package = "CNVWorkshop")
+knitr::include_graphics(system.file("vignettes/RaggedExperiment.png", package = "CNVWorkshop"))
 ```
 
 The four main _Assay_ functions for converting to matrix are:
