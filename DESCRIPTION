@@ -21,7 +21,7 @@ Depends:
     CNVRanger,
     PureCN,
     RaggedExperiment,
-    regioneR,
+    regioneR
 Imports:
     MultiAssayExperiment,
     SummarizedExperiment,

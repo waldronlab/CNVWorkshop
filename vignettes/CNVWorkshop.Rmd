@@ -6,8 +6,8 @@ output:
     toc_depth: 3
     fig_width: 5
 vignette: >
-  % \VignetteIndexEntry{Copy number variation analysis with Bioconductor}
-  % \VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Copy number variation analysis with Bioconductor}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding[utf8]{inputenc}  
 ---
 
