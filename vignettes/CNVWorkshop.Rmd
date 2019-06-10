@@ -15,14 +15,14 @@ vignette: >
 
 ## Instructor(s) name(s) and contact information
 
-Ludwig Geistlinger, Marcel Ramos, Seyhun Oh, and Levi Waldron
+Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 
 CUNY School of Public Health
 55 W 125th St, New York, NY 10027
 
 Ludwig.Geistlinger@sph.cuny.edu
 Marcel.Ramos@sph.cuny.edu
-Seyhun.Oh@sph.cuny.edu
+Sehyun.Oh@sph.cuny.edu
 Levi.Waldron@sph.cuny.edu
 
 ## Workshop Description
@@ -42,7 +42,7 @@ As an advanced application example, the workshop also introduces allele-specific
 absolute copy number analysis and how it is incorporated in genomic cancer analysis 
 for the estimation of tumor characteristics such as tumor purity and ploidy. 
 
-# Wokshop information
+## Wokshop information
 
 ## Pre-requisites
 
@@ -104,8 +104,8 @@ Execution of example code and hands-on practice
 * learn how to carry out a GWAS analysis for CNV and quantitative phenotype data
 * learn how to estimate tumor purity and ploidy from absolute CN analysis with 
   [PureCN](http://bioconductor.org/packages/PureCN)
- 
-# Overview
+
+## Overview
 
 ```{r setup, echo=FALSE}
 suppressPackageStartupMessages({ 
@@ -116,6 +116,7 @@ suppressPackageStartupMessages({
     library(SummarizedExperiment)
     library(curatedTCGAData)
     library(TCGAutils)
+    library(RaggedExperiment)
 })
 ```
 
@@ -124,19 +125,198 @@ state due to duplication or deletion of genomic regions.
 CNVs can be experimentally detected based on comparative genomic hybridization, 
 and computationally inferred from SNP-arrays or next-generation sequencing data.
 These technologies for CNV detection have in common that they report, for each
-sample under study, genomic regions that are duplicated or deleted with respect 
-to a reference. 
-Such regions are denoted as _CNV calls_ in the following and will be considered 
-the starting point for analysis.  
+sample under study, genomic regions that are duplicated or deleted with respect
+to a reference.
+Such regions are denoted as _CNV calls_ in the following and will be considered
+the starting point for analysis.
 
-# Representation and manipulation of CNV data with RaggedExperiment 
+## Representation and manipulation of CNV data with RaggedExperiment
 
-[RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment)
+`RaggedExperiment` is a flexible data representation for segmented copy number,
+somatic mutations such as represented in `.vcf` files, and other ragged array
+schema for genomic location data.  Like the `GRangesList` class from
+`GenomicRanges`, `RaggedExperiment` can be used to represent _differing_
+genomic ranges on each of a set of samples. In fact, `RaggedExperiment`
+contains a `GRangesList`:
 
-Further information can be found in the 
-[vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html)
+```{r}
+showClass("RaggedExperiment")
+```
+### Constructing a `RaggedExperiment` object
 
-# Integrative downstream analysis of CNVs with CNVRanger
+We start with a toy example of two `GRanges` objects, providing ranges on two
+chromosomes in two samples:
+
+```{r}
+sample1 <- GRanges(
+    c(A = "chr1:1-10:-", B = "chr1:8-14:+", C = "chr1:15-18:+"),
+    score = 3:5, type=c("germline", "somatic", "germline"))
+sample2 <- GRanges(
+    c(D = "chr1:1-10:-", E = "chr1:11-18:+"),
+    score = 11:12, type=c("germline", "somatic"))
+```
+
+Include column data `colData` to describe the samples:
+
+```{r}
+colDat <- DataFrame(id=1:2, status = factor(c("control", "case")))
+```
+
+The `RaggedExperiment` can be constructed from individual `Granges`:
+
+```{r}
+(ragexp <- RaggedExperiment(
+    sample1 = sample1,
+    sample2 = sample2,
+    colData = colDat))
+```
+
+Or from a `GRangesList`:
+
+```{r}
+grl <- GRangesList(sample1=sample1, sample2=sample2)
+ragexp2 <- RaggedExperiment(grl, colData = colDat)
+identical(ragexp, ragexp2)
+```
+
+Note that the original ranges are is represented as the `rowRanges` of the
+`RaggedExperiment`:
+
+```{r}
+rowRanges(ragexp)
+```
+
+### `*Assay` functions
+
+`RaggedExperiment` provides a flexible set of _*Assay_ methods to
+support transformation of data to matrix format with varying row dimensions.
+
+```{r, echo=FALSE, fig.cap="RaggedExperiment object schematic. Rows and columns represent genomic ranges and samples, respectively. Assay operations can be performed with (from left to right) compactAssay, qreduceAssay, and sparseAssay.", out.width="\\maxwidth"}
+knitr::include_graphics("vignettes/RaggedExperiment.png", package = "CNVWorkshop")
+```
+
+The four main _Assay_ functions for converting to matrix are:
+
+* [sparseAssay](#sparseassay): leave ranges exactly as-is
+* [compactAssay](#compactassay): combine identical ranges
+* [disjoinAssay](#disjoinassay): disjoin ranges that overlap across samples
+* [qreduceAssay](#qreduceassay): find overlaps with provided "query" ranges
+
+These each have a corresponding function for conversion to [RangedSummarizedExperiment](#Conversion to RangedSummarizedExperiment).
+
+#### sparseAssay
+
+The most straightforward matrix representation of a `RaggedExperiment` will
+return a matrix with the number of rows equal to the total number of ranges defined across all
+samples. *i.e.* the 5 rows of the `sparseAssay` result:
+
+```{r}
+sparseAssay(ragexp)
+```
+
+correspond to the ranges of the unlisted `GRangesList`:
+
+```{r}
+unlist(grl)
+```
+
+The rownames of the `sparseAssay` result are equal to the names of the `GRanges` elements.
+The values in the matrix returned by `sparseAssay` correspond to the first columns of the
+`mcols` of each `GRangesList` element, in this case the "score" column.
+
+Note, this is the default `assay()` method of `RaggedExperiment`:
+```{r}
+assay(ragexp, "score")
+assay(ragexp, "type")
+```
+
+#### compactAssay
+
+The dimensions of the `compactAssay` result differ from that of the `sparseAssay` result only
+if there are identical ranges in different samples. Identical ranges are placed in the same row in
+the output. Ranges with any difference in start, end, or strand, will be
+kept on different rows. Non-disjoint ranges are **not** collapsed.
+
+```{r}
+compactAssay(ragexp)
+compactAssay(ragexp, "type")
+```
+
+Note that row names are constructed from the ranges, and the names of the `GRanges` vectors are
+lost, unlike in the `sparseAssay` result.
+
+#### disjoinAssay
+
+This function is similar to `compactAssay` except the rows are _disjoint_[^9]
+ranges. Elements of the matrix are summarized by applying the `simplifyDisjoin`
+functional
+argument to assay values of overlapping ranges.
+
+```{r}
+disjoinAssay(ragexp, simplifyDisjoin = mean)
+```
+
+[^9]: A _disjoint_ set of ranges has no overlap between any ranges of the set.
+
+#### qreduceAssay
+
+The `qreduceAssay` function is the most complicated but likely the most useful of the `RaggedExperiment`
+*Assay* functions. It requires you to provide a `query` argument that is a `GRanges` vector, and
+the rows of the resulting matrix correspond to the elements of this `GRanges`. The returned matrix will have
+dimensions `length(query)` by `ncol(x)`. Elements of the resulting matrix correspond to the overlap of the
+_i_ th `query` range in the _j_ th sample, summarized according to the `simplifyReduce` functional argument.
+This can be useful, for example, to calculate per-gene copy number or mutation status by providing
+the genomic ranges of every gene as the `query`.
+
+The `simplifyReduce` argument in `qreduceAssay` allows the user to summarize
+overlapping regions with a custom method for the given "query" region of
+interest. We provide one for calculating a weighted average score per
+query range, where the weight is proportional to the overlap widths between
+overlapping ranges and a query range.
+
+_Note_ that there are three arguments to this function. See the documentation
+for additional details.
+
+```{r}
+weightedmean <- function(scores, ranges, qranges)
+{
+    isects <- pintersect(ranges, qranges)
+    sum(scores * width(isects)) / sum(width(isects))
+}
+```
+
+The call to `qreduceAssay` calculates the overlaps between the ranges of each sample:
+```{r}
+grl
+```
+
+with the query ranges (an arbitrary set is defined here for demonstration):
+First create a demonstration "query" region of interest:
+```{r}
+(query <- GRanges(c("chr1:1-14:-", "chr1:15-18:+")))
+```
+
+using the `simplifyReduce` function to resolve overlapping ranges and return a matrix with rows
+corresponding to the query:
+```{r}
+qreduceAssay(ragexp, query, simplifyReduce = weightedmean)
+```
+
+### Conversion to RangedSummarizedExperiment
+
+These methods all have corresponding methods to return a `RangedSummarizedExperiment` and preserve the `colData`:
+```{r, results='hide'}
+sparseSummarizedExperiment(ragexp)
+compactSummarizedExperiment(ragexp)
+disjoinSummarizedExperiment(ragexp, simplify = mean)
+qreduceSummarizedExperiment(ragexp, query=query, simplify=weightedmean)
+```
+
+Please see the `RaggedExperiment` vignette for
+[more details](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html).
+
+## Integrative downstream analysis of CNVs with CNVRanger
+
 The key parts of the functionality implemented in `CNVRanger` were developed,
 described, and applied in several previous studies:
 
@@ -594,12 +774,144 @@ res <- cnvEQTL(cnvrs="01_GBM_GISTIC_Peaks-20160128",
 res
 ```
 
-# Allele-specific CN analysis with PureCN
+# Allele-specific CNV analysis with PureCN
 
-[PureCN](http://bioconductor.org/packages/PureCN)
+For allele-specific copy number alteration (CNA) analysis, most commonly used tools in the field rely on high quality genome-wide data with matched normal profiles, limiting their applicability in clinical settings. 
 
-Further information can be found in the 
-[vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf)
-and [publication](https://doi.org/10.1186/s13029-016-0060-z).
+Here, we're introducing the open-source [PureCN](http://bioconductor.org/packages/PureCN) R/Bioconductor package in conjunction with widely used variant-calling and copy number segmentation algorithms, for allele-specific CNA analysis from whole exome sequencing (WES) _**without matched normals**_. 
+
+Further information on PureCN and its CNV analysis workflow can be found in the 
+[PureCN vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf), [PureCN paper](https://doi.org/10.1186/s13029-016-0060-z), and [CNV analysis workflow paper](https://www.biorxiv.org/content/10.1101/552711v1).
+
+## Overview of the workflow
+Detailed scripts are available in this [GitHub repo](https://github.com/shbrief/CNVWorkflow_Code).
+
+### Prepare input files using PureCN and MuTect
+
+PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.
+
+**1. BED file**: we are analyzing WES data, so we need to know which part of the genome is captured through BED file.   
+**2. Process-matched normal BAM files**: these allow us to find out what kinds of backgrounds are there, especially technical biases.   
+**3. Tumor BAM files**: these contain the genetic changes, both germline and somatic alternations.   
+<br>
+
+```{r echo=FALSE, out.width = '70%', fig.cap="Overview of CNV analysis workflow"}
+knitr::include_graphics(system.file("vignettes/overview_1.png", package = "CNVWorkshop"))
+```
+
+<br>
+
+Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with `PureCN.R` command line tool.
+
+**1. Interval file**    
+IntervalFile.R command line tool optimize the targets for copy number calling, for example, 
+
+* large targets are split to obtain higher resolution   
+* targets in regions of low mappability are dropped   
+
+One thing you should be careful is to make sure that the genome version of target file matches the reference.   
+
+**2. VCF and stats files**   
+MuTect is run on `--artifact-detection-mode`, 
+
+* which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
+* which includes variant calls that are clearly germline
+* which is commonly used for Panel-Of-Normals creation   
+
+```{r eval=FALSE}
+java -jar mutect.jar \
+    --analysis_type MuTect \
+    -R hg38.fasta \
+    --dbsnp $DBSNP_VCF \
+    --cosmic $COSMIC_VCF \
+    -I:tumor $BAM_TUMOR  \
+    -o $OUT/${SAMPLEID}_mutect_stats.txt \
+    -vcf $OUT/${SAMPLEID}_mutect.vcf
+```
+
+Output VCF files contain both germline SNPs and somatic mutations, which  have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. `call_stats.txt` file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.
+
+**3. Pool of normals (PoN)**   
+Depending on the type of variant you're looking for, the PON will be generated differently. What all PONs have in common is that,
+
+* they are made from normal samples (in this context, "normal" means derived from healthy tissue that is believed to not have any somatic alterations) and 
+* their main purpose is to capture recurrent technical artifacts in order to improve the results of the variant calling analysis.  
+
+**4. GC-normalized coverage files**  
+`Coverage.R` process tumor and normal bam files to calculate GC-normalized coverages. Different library can give different coverage profiles, and the most important library-specific bias is due to GC-content. i.e. regions of high AT- or GC-content are not always captured with exactly the same efficiency in tumor and normals.
+
+**5. NormalDB**   
+To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).   
+
+Three outputs from this process are used for PureCN,
+
+* a database of normal samples, which will be used to normalize tumor coverages,   
+* mapping bias information of each variant. By examining the coverage of particular intervals in a pool of normals, we can estimate how well this assay captures these intervals and will then adjust the tumor coverage accordingly.    
+* Last is an interval weight file. Interval weights will be set proportional to the inverse of coverage standard deviation across all normals. Intervals with high variance in coverage in the pool of normals are thus down-weighted.
+
+<br>
+
+All the pre-processed files above are used as inputs for `PureCN.R` to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.
+
+```{r eval=FALSE}
+Rscript $PURECN/PureCN.R \
+    --out $PCN_OUT/PureCN/tumor_only/$SAMPLEID \
+    --tumor $PCN_OUT/tumor_cov/${SAMPLEID}_coverage_loess.txt \
+    --SAMPLEID ${SAMPLEID} \
+    --vcf $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect.vcf \
+    --statsfile $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect_stats.txt \
+    --normaldb $PCN_OUT/normalDB/normalDB_hg38.rds \
+    --normal_panel $PCN_OUT/normalDB/mapping_bias_hg38.rds \
+    --intervals $INPUT/bed/baits_hg38_intervals.txt \
+    --intervalweightfile $PCN_OUT/normalDB/interval_weights_hg38.txt \
+    --snpblacklist hg38_simpleRepeats.bed \
+    --genome hg38 \
+    --force --postoptimize --seed 123
+```
+
+<br>
+
+Here is the more detailed workflow diagram with the intermediate files described above.
+```{r echo=FALSE, out.width = '180%', fig.cap="Overview of CNV analysis workflow with intermediates"}
+knitr::include_graphics(system.file("vignettes/overview_2.png", package = "CNVWorkshop"))
+```
+
+<br>
+
+As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. 
+```{r echo=FALSE, out.width = '180%', fig.cap="Requirement for production pipeline"}
+knitr::include_graphics(system.file("vignettes/overview_3.png", package = "CNVWorkshop"))
+```
+
+## Analysis examples
+### Purity and ploidy estimates
+```{r example_output, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+library(PureCN)
+ret = readRDS("data/Sample1_PureCN.rds")
+```
+
+```{r eval=FALSE}
+head(predictSomatic(ret), 3)
+```
+
+```{r echo=FALSE, out.width = '80%', fig.cap="Example of purity and ploidy estimates"}
+knitr::include_graphics(system.file("vignettes/puri_ploi.png", package = "CNVWorkshop"))
+```
+
+### TMB (Tumor mutation burden)
+TMB is the number of somatic mutations carried by tumor cells.
+```{r TMB, echo=FALSE, out.width = '75%', fig.cap="Example of tumor mutation burden"}
+knitr::include_graphics(system.file("vignettes/TMB.png", package = "CNVWorkshop"))
+```
+
+### Mutational signatures
+Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
+
+```{r MutSig, echo=FALSE, out.width = '150%', fig.cap="Example of mutational signature"}
+knitr::include_graphics(system.file("vignettes/MutSig.png", package = "CNVWorkshop"))
+```
+
+* Signature 3 has been found in breast, **ovarian**, and pancreatic cancers.   
+* Signature 4 has been found in head and neck cancer, liver cancer, **lung adenocarcinoma**, lung squamous carcinoma, small cell lung carcinoma, and oesophageal cancer.
 
 
