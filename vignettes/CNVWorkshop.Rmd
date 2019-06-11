@@ -13,7 +13,9 @@ vignette: >
 
 # Copy number variation analysis with Bioconductor
 
-## Instructor(s) name(s) and contact information
+## Workshop information
+
+### Instructor(s) name(s) and contact information
 
 Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 
@@ -25,7 +27,7 @@ Marcel.Ramos@sph.cuny.edu
 Sehyun.Oh@sph.cuny.edu
 Levi.Waldron@sph.cuny.edu
 
-## Workshop Description
+### Workshop Description
 
 This workshop gives an overview of Bioconductor solutions for the analysis of 
 copy number variation (CNV) data. 
@@ -42,9 +44,8 @@ As an advanced application example, the workshop also introduces allele-specific
 absolute copy number analysis and how it is incorporated in genomic cancer analysis 
 for the estimation of tumor characteristics such as tumor purity and ploidy. 
 
-## Wokshop information
 
-## Pre-requisites
+### Pre-requisites
 
 * Basic knowledge of R syntax
 * Familiarity with the SummarizedExperiment class
@@ -55,18 +56,18 @@ for the estimation of tumor characteristics such as tumor purity and ploidy.
 * Familiarity with the biological definition of single nucleotide polymorphism 
   (SNP) and copy number variation (CNV) 
 
-## Workshop Participation
+### Workshop Participation
 
 Execution of example code and hands-on practice
 
-## _R_ / _Bioconductor_ packages used
+### _R_ / _Bioconductor_ packages used
 
 * [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment)
 * [CNVRanger](http://bioconductor.org/packages/CNVRanger)
 * [regioneR](http://bioconductor.org/packages/regioneR)
 * [PureCN](http://bioconductor.org/packages/PureCN)
 
-## Time outline
+### Time outline
 
 | Activity                                              | Time |
 |-------------------------------------------------------|------|
@@ -76,7 +77,7 @@ Execution of example code and hands-on practice
 | Allele-specific CN analysis in cancer                 | 15m  |
 
 
-## Learning Goals
+### Learning Goals
 
 * get familiar with elementary concepts of CNV analysis
 * learn how to efficiently represent, access, and manipulate CNV data 
@@ -89,7 +90,7 @@ Execution of example code and hands-on practice
   phenotypes
 * get familiar with allele-specific absolute CN analysis of genomic cancer data 
  
-## Specific objectives
+### Specific objectives
 
 * understand how CNVs can be experimentally detected and computationally inferred
   from SNP arrays and next-generation sequencing data
@@ -354,7 +355,7 @@ Similarly, `CNVRanger` also interfaces with
 [PLINK](http://zzz.bwh.harvard.edu/plink), thereby enabling traditional genome-wide 
 association studies (GWAS) between CNVs and quantitative phenotypes.
 
-## Reading and accessing CNV data
+### Reading and accessing CNV data
 
 `CNVRanger` uses Bioconductor core data structures 
 implemented in the [GenomicRanges](http://bioconductor.org/packages/GenomicRanges) 
@@ -367,7 +368,7 @@ We start by loading the package.
 library(CNVRanger)
 ```
 
-### Input data format
+#### Input data format
 
 For demonstration, we consider CNV calls as obtained with 
 [PennCNV](http://penncnv.openbioinformatics.org) from SNP-chip data in a 
@@ -389,7 +390,7 @@ head(calls)
 length(unique(calls[,"NE_id"]))
 ```
 
-### Representation as a `GRangesList`
+#### Representation as a `GRangesList`
 
 We group the calls by sample ID, resulting in a `GRangesList`.
 Each element of the list corresponds to a sample, and contains the genomic 
@@ -412,7 +413,7 @@ grl <- sort(grl)
 grl
 ```
 
-### Representation as a `RaggedExperiment`
+#### Representation as a `RaggedExperiment`
 
 An alternative matrix-like representation of the CNV calls can be obtained with 
 the `RaggedExperiment` data class. 
@@ -451,7 +452,7 @@ colData(ra)$fcr <- round(fcr, digits=2)
 colData(ra)
 ```
 
-## Summarizing individual CNV calls across a population
+### Summarizing individual CNV calls across a population
 
 In CNV analysis, it is often of interest to summarize individual calls across
 the population, (i.e. to define CNV regions), for subsequent association
@@ -461,7 +462,7 @@ summarized regions.
 However, this typically inflates CNV region size, and more appropriate approaches
 have been developed for this purpose.
 
-### Trimming low-density areas
+#### Trimming low-density areas
 
 Here, we use the approach from [CNVRuler](http://www.ircgp.com/CNVRuler) 
 to summarize CNV calls to CNV regions (see 
@@ -481,7 +482,7 @@ Note that CNV frequency (number of samples overlapping each region) and CNV type
 (gain, loss, or both) have also been annotated in the columns `freq` and `type`,
 respectively.
 
-### Identifying recurrent regions
+#### Identifying recurrent regions
 
 In particular in cancer, it is important to distinguish driver from 
 passenger mutations, i.e. to distinguish meaningful events from random 
@@ -506,7 +507,7 @@ and filter for recurrent CNVs that exceed a significance threshold of 0.05.
 cnvrs[cnvrs$pvalue < 0.05]
 ```
 
-## Overlap analysis of CNVs with functional genomic regions
+### Overlap analysis of CNVs with functional genomic regions
 
 Once individual CNV calls have been summarized across the population, it is 
 typically of interest whether the resulting CNV regions overlap with functional 
@@ -599,7 +600,7 @@ Note: the function `regioneR::permTest` allows to incorporate user-defined
 functions for randomizing regions and evaluating additional measures of overlap
 such as total genomic size in bp.
 
-## CNV-expression association analysis
+### CNV-expression association analysis
 
 Studies of expression quantitative trait loci (eQTLs) aim at the discovery of 
 genetic variants that explain variation in gene expression levels 
@@ -618,7 +619,7 @@ comparison.  For more than two states (e.g. 0n, 1n, 2n), edgeR’s
 ANOVA-like test is applied to test all deviating groups for
 significant expression differences relative to 2n.
 
-### Dealing with individual CNV and RNA-seq assays
+#### Working with individual CNV and RNA-seq assays
 
 We demonstrate the functionality by loading RNA-seq read count data from 
 skeletal muscle samples for 183 Nelore cattle steers, which we analyzed for 
@@ -679,7 +680,7 @@ The second column contains the genes tested in the genomic window around each CN
 region, and the other columns report (i) log2 fold change with respect to the 
 2n group, (ii) edgeR's DE _p_-value, and (iii) the (per default) Benjamini-Hochberg adjusted _p_-value. 
 
-### Dealing with TCGA data stored in a `MultiAssayExperiment`
+#### Working with TCGA data stored in a `MultiAssayExperiment`
 
 In the previous section, we individually prepared the CNV and RNA-seq data for 
 CNV-expression association analysis.
@@ -774,7 +775,7 @@ res <- cnvEQTL(cnvrs="01_GBM_GISTIC_Peaks-20160128",
 res
 ```
 
-# Allele-specific CNV analysis with PureCN
+## Allele-specific CNV analysis with PureCN
 
 For allele-specific copy number alteration (CNA) analysis, most commonly used tools in the field rely on high quality genome-wide data with matched normal profiles, limiting their applicability in clinical settings. 
 
@@ -783,20 +784,20 @@ Here, we're introducing the open-source [PureCN](http://bioconductor.org/package
 Further information on PureCN and its CNV analysis workflow can be found in the 
 [PureCN vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf), [PureCN paper](https://doi.org/10.1186/s13029-016-0060-z), and [CNV analysis workflow paper](https://www.biorxiv.org/content/10.1101/552711v1).
 
-## Overview of the workflow
+### Overview of the workflow
 Detailed scripts are available in this [GitHub repo](https://github.com/shbrief/CNVWorkflow_Code).
 
-### Prepare input files using PureCN and MuTect
+#### Prepare input files using PureCN and MuTect
 
 PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.
 
-#### 1. BED file
+##### 1. BED file
 we are analyzing WES data, so we need to know which part of the genome is captured through BED file.
 
-#### 2. _**Process-matched**_ normal BAM files
+##### 2. _**Process-matched**_ normal BAM files
 these allow us to find out what kinds of backgrounds are there, especially technical biases.   
 
-#### 3. Tumor BAM files
+##### 3. Tumor BAM files
 these contain the genetic changes, both germline and somatic alternations.   
 <br>
 
@@ -806,10 +807,10 @@ knitr::include_graphics(system.file("vignettes/overview_1.png", package = "CNVWo
 
 <br>
 
-### Five intermediate files
+#### Five intermediate files
 Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with `PureCN.R` command line tool.
 
-#### 1. Interval file   
+##### 1. Interval file   
 IntervalFile.R command line tool optimize the targets for copy number calling, for example, 
 
 * large targets are split to obtain higher resolution   
@@ -817,7 +818,7 @@ IntervalFile.R command line tool optimize the targets for copy number calling, f
 
 One thing you should be careful is to make sure that the genome version of target file matches the reference.   
 
-#### 2. VCF and stats files   
+##### 2. VCF and stats files   
 MuTect is run on `--artifact-detection-mode`, 
 
 * which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
@@ -837,16 +838,16 @@ java -jar mutect.jar \
 
 Output VCF files contain both germline SNPs and somatic mutations, which  have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. `call_stats.txt` file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.
 
-#### 3. Pool of normals (PoN)   
+##### 3. Pool of normals (PoN)   
 Depending on the type of variant you're looking for, the PON will be generated differently. What all PONs have in common is that,
 
 * they are made from normal samples (in this context, "normal" means derived from healthy tissue that is believed to not have any somatic alterations) and 
 * their main purpose is to capture recurrent technical artifacts in order to improve the results of the variant calling analysis.  
 
-#### 4. GC-normalized coverage files  
+##### 4. GC-normalized coverage files  
 `Coverage.R` process tumor and normal bam files to calculate GC-normalized coverages. Different library can give different coverage profiles, and the most important library-specific bias is due to GC-content. i.e. regions of high AT- or GC-content are not always captured with exactly the same efficiency in tumor and normals.
 
-#### 5. NormalDB   
+##### 5. NormalDB   
 To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).   
 
 Three outputs from this process are used for PureCN,
@@ -891,20 +892,20 @@ As long as you are using the same capture kit and the same sequencing protocols,
 knitr::include_graphics(system.file("vignettes/overview_3.png", package = "CNVWorkshop"))
 ```
 
-## Analysis examples
+### Analysis examples
 ```{r example_output, echo=FALSE, warning=FALSE, message=FALSE}
 library(PureCN)
-file.rds = system.file("data/Sample1_PureCN.rds", package = "CNVWorkshop")
+file.rds = system.file("extdata/Sample1_PureCN.rds", package = "CNVWorkshop")
 ret = readRDS(file.rds)
 ```
 
-#### 1. Overview
+##### 1. Overview
 The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.
 ```{r fig.width=4.5, fig.height=4.5}
 plotAbs(ret, type="overview")
 ```
 
-#### 2. Log-ratio histogram
+##### 2. Log-ratio histogram
 This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of 'Overview' plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.
 ```{r fig.width=4, fig.height=4}
 plotAbs(ret, 1, type="hist")
@@ -912,22 +913,22 @@ plotAbs(ret, 1, type="hist")
 
 ```{r}
 createCurationFile(file.rds)
-read.csv(system.file("data/Sample1_PureCN.csv", package = "CNVWorkshop"))
+read.csv(system.file("extdata/Sample1_PureCN.csv", package = "CNVWorkshop"))
 ```
 
-#### 3. Amplification and deletion
+##### 3. Amplification and deletion
 ```{r}
 gene.calls = callAlterations(ret)
 head(gene.calls)
 ```
 
-#### 4. Genomic regions with LOH
+##### 4. Genomic regions with LOH
 ```{r}
 loh = callLOH(ret)
 head(loh)
 ```
 
-### Example of TCGA-OV and TCGA-LUAD datasets
+#### Example of TCGA-OV and TCGA-LUAD datasets
 **1. Purity and Ploidy**         
 **2. TMB (Tumor mutation burden)** : TMB is the number of somatic mutations carried by tumor cells.    
 **3. Mutational signatures** : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
