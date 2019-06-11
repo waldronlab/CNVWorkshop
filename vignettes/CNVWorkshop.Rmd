@@ -318,6 +318,32 @@ Please see the `RaggedExperiment` vignette for
 
 ## Integrative downstream analysis of CNVs with CNVRanger
 
+```{r, echo=FALSE}
+knitr::include_graphics(system.file("vignettes/CNVRanger.png", package = "CNVWorkshop"))
+```
+
+**(A)** The [CNVRanger](http://bioconductor.org/packages/CNVRanger) package
+imports CNV calls from a simple file format into 
+`R`, and stores them in dedicated Bioconductor data structures, and 
+**(B)** implements three frequently used approaches for summarizing CNV calls 
+across a population: 
+_(i)_ the [CNVRuler](http://www.ircgp.com/CNVRuler)
+that trims region margins based on regional density
+[Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239), 
+_(ii)_ the reciprocal overlap procedure that requires sufficient mutual overlap 
+between calls 
+[Conrad et al., 2010](https://doi.org/10.1038/nature08516), and
+_(iii)_ the [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) procedure 
+that identifies recurrent CNV regions
+[Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104).
+**(C)** `CNVRanger` builds on [regioneR](http://bioconductor.org/packages/regioneR) 
+for overlap analysis of CNVs with functional genomic regions, 
+**(D)** implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis 
+for CNVs by interfacing with [edgeR](http://bioconductor.org/packages/edgeR), and 
+**(E)** interfaces with
+[PLINK](http://zzz.bwh.harvard.edu/plink) for traditional
+genome-wide association studies (GWAS) between CNVs and quantitative phenotypes.
+
 The key parts of the functionality implemented in `CNVRanger` were developed,
 described, and applied in several previous studies:
 
@@ -331,29 +357,6 @@ described, and applied in several previous studies:
 
 - CNVs are associated with genomic architecture in a songbird 
     [da Silva et al., 2018](https://doi.org/10.1186/s12864-018-4577-1)
-
-The [CNVRanger](http://bioconductor.org/packages/CNVRanger) package implements 
-three frequently used approaches for summarizing CNV calls:
-
-1. The [CNVRuler](http://www.ircgp.com/CNVRuler) procedure that trims region 
-   margins based on regional density 
-   [Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239), 
-2. the reciprocal overlap (RO) procedure that requires calls to sufficiently 
-   overlap with one another 
-   [Conrad et al., 2010](https://doi.org/10.1038/nature08516), and
-3. the [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) procedure that
-   identifies recurrent CNV regions 
-   [Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104).
-
-In addition, `CNVRanger` provides functionality for the analysis of the 
-overlap of CNVs with functional genomic regions such as genes, promoters, and enhancers. 
-The package also implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis for CNVs 
-by interfacing with the [edgeR](http://bioconductor.org/packages/edgeR) package 
-with convenient options
-for common analyses including restriction by genomic regions and cis-eQTLs.
-Similarly, `CNVRanger` also interfaces with 
-[PLINK](http://zzz.bwh.harvard.edu/plink), thereby enabling traditional genome-wide 
-association studies (GWAS) between CNVs and quantitative phenotypes.
 
 ### Reading and accessing CNV data
 
