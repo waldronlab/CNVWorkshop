@@ -818,12 +818,6 @@ IntervalFile.R command line tool optimize the targets for copy number calling, f
 One thing you should be careful is to make sure that the genome version of target file matches the reference.   
 
 #### 2. VCF and stats files   
-MuTect is run on `--artifact-detection-mode`, 
-
-* which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
-* which includes variant calls that are clearly germline
-* which is commonly used for Panel-Of-Normals creation   
-
 ```{r eval=FALSE}
 java -jar mutect.jar \
     --analysis_type MuTect \
@@ -837,7 +831,26 @@ java -jar mutect.jar \
 
 Output VCF files contain both germline SNPs and somatic mutations, which  have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. `call_stats.txt` file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.
 
-#### 3. Pool of normals (PoN)   
+#### 3. Pool of normals (PoN) 
+For this workflow, MuTect is run on `--artifact-detection-mode`, 
+
+* which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
+* which includes variant calls that are clearly germline
+* which is commonly used for Panel-Of-Normals creation      
+
+```{bash eval=FALSE}
+java -jar mutect.jar \
+   --analysis_type MuTect \
+   -R hg38.fasta \
+   --artifact_detection_mode \
+   --dbsnp $DBSNP_VCF \
+   --cosmic $COSMIC_VCF \
+   -dt None \
+   -I:tumor $BAM_NORMAL  \
+   -o $OUT/${SAMPLEID}_pon_stats.txt \
+   -vcf $OUT/${SAMPLEID}_pon.vcf
+```
+
 Depending on the type of variant you're looking for, the PON will be generated differently. What all PONs have in common is that,
 
 * they are made from normal samples (in this context, "normal" means derived from healthy tissue that is believed to not have any somatic alterations) and 
