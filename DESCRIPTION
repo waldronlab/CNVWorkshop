@@ -48,3 +48,5 @@ biocViews:
     RNASeq,
     SNP 
 RoxygenNote: 6.1.1
+URL: https://waldronlab.github.io/CNVWorkshop
+DockerImage: ludwigg/cnvworkshop:latest

@@ -1,0 +1,17 @@
+title: "enrichOmics"
+
+url: https://waldronlab.io/CNVWorkshop
+
+template:
+  params:
+    bootswatch: flatly
+
+navbar:
+  title: ~
+  type: default
+  left:
+    - text: Workshop
+      href: articles/Geistlinger_CNVWorkshop.html
+  right:
+    - icon: fa-github
+      href: https://github.com/waldronlab/CNVWorkshop
