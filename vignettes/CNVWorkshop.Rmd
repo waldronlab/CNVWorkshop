@@ -193,7 +193,7 @@ rowRanges(ragexp)
 support transformation of data to matrix format with varying row dimensions.
 
 ```{r, echo=FALSE, fig.cap="RaggedExperiment object schematic. Rows and columns represent genomic ranges and samples, respectively. Assay operations can be performed with (from left to right) compactAssay, qreduceAssay, and sparseAssay.", out.width="\\maxwidth"}
-knitr::include_graphics(system.file("vignettes/RaggedExperiment.png", package = "CNVWorkshop"))
+knitr::include_graphics("RaggedExperiment.png")
 ```
 
 The four main _Assay_ functions for converting to matrix are:
@@ -319,7 +319,7 @@ Please see the `RaggedExperiment` vignette for
 ## Integrative downstream analysis of CNVs with CNVRanger
 
 ```{r, echo=FALSE}
-knitr::include_graphics(system.file("vignettes/CNVRanger.png", package = "CNVWorkshop"))
+knitr::include_graphics("CNVRanger.png")
 ```
 
 **(A)** The [CNVRanger](http://bioconductor.org/packages/CNVRanger) package
@@ -805,7 +805,7 @@ these contain the genetic changes, both germline and somatic alternations.
 <br>
 
 ```{r echo=FALSE, fig.height=2, fig.width=2}
-knitr::include_graphics(system.file("vignettes/overview_1.png", package = "CNVWorkshop"))
+knitr::include_graphics("overview_1.png")
 ```
 
 <br>
@@ -897,7 +897,7 @@ Rscript $PURECN/PureCN.R \
 **Overview of CNV analysis workflow with intermediates**    
 Here is the more detailed workflow diagram with the intermediate files described above.
 ```{r echo=FALSE, out.width = '180%'}
-knitr::include_graphics(system.file("vignettes/overview_2.png", package = "CNVWorkshop"))
+knitr::include_graphics("overview_2.png")
 ```
 
 <br>
@@ -905,13 +905,13 @@ knitr::include_graphics(system.file("vignettes/overview_2.png", package = "CNVWo
 **Requirement for production pipeline**    
 As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. 
 ```{r echo=FALSE, out.width = '180%'}
-knitr::include_graphics(system.file("vignettes/overview_3.png", package = "CNVWorkshop"))
+knitr::include_graphics("overview_3.png")
 ```
 
 ### Analysis examples
 ```{r example_output, echo=FALSE, warning=FALSE, message=FALSE}
 library(PureCN)
-file.rds = system.file("extdata/Sample1_PureCN.rds", package = "CNVWorkshop")
+file.rds = "Sample1_PureCN.rds"
 ret = readRDS(file.rds)
 ```
 
@@ -929,7 +929,7 @@ plotAbs(ret, 1, type="hist")
 
 ```{r}
 createCurationFile(file.rds)
-read.csv(system.file("extdata/Sample1_PureCN.csv", package = "CNVWorkshop"))
+read.csv("Sample1_PureCN.csv")
 ```
 
 ##### 3. Amplification and deletion
@@ -950,5 +950,5 @@ head(loh)
 **3. Mutational signatures** : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
 
 ```{r analysis_example, echo=FALSE}
-knitr::include_graphics(system.file("vignettes/analysis_example.png", package = "CNVWorkshop"))
+knitr::include_graphics("analysis_example.png")
 ```
