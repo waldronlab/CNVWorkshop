@@ -1,0 +1,329 @@
+---
+title: Copy number variation analysis with Bioconductor
+author:
+- name: Ludwig Geistlinger
+  affiliation: CUNY School of Public Health, New York, NY
+- name: Levi Waldron
+  affiliation: CUNY School of Public Health, New York, NY
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+vignette: >
+  %\VignetteIndexEntry{Copy number variation analysis with Bioconductor}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  html_document:
+    mathjax: null   
+---
+
+# Copy number variation analysis with Bioconductor
+
+```{r, include=FALSE}
+library(knitr)
+opts_chunk$set(out.width="100%", cache=TRUE)
+```
+
+## Workshop information
+
+### Instructor(s) name(s) and contact information
+
+Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
+
+CUNY School of Public Health
+55 W 125th St, New York, NY 10027
+
+Ludwig.Geistlinger@sph.cuny.edu
+Marcel.Ramos@sph.cuny.edu
+Sehyun.Oh@sph.cuny.edu
+Levi.Waldron@sph.cuny.edu
+
+### Workshop Description
+
+This workshop gives an overview of Bioconductor solutions for the analysis of 
+copy number variation (CNV) data. 
+The workshop introduces Bioconductor core data structures for efficient 
+representation, access, and manipulation of CNV data, and how to use these
+containers for structured downstream analysis of CNVs and integration with gene 
+expression and quantitative phenotypes. 
+Participants will be provided with code and hands-on practice for a comprehensive 
+set of typical analysis steps including exploratory analysis, summarizing individual 
+CNV calls across a population, overlap analysis with functional genomic regions 
+and regulatory elements, expression quantitative trait loci (eQTL) analysis, 
+and genome-wide association analysis (GWAS) with quantitative phenotypes.
+As an advanced application example, the workshop also introduces allele-specific 
+absolute copy number analysis and how it is incorporated in genomic cancer analysis 
+for the estimation of tumor characteristics such as tumor purity and ploidy. 
+
+
+### Pre-requisites
+
+* Basic knowledge of R syntax
+* Familiarity with the SummarizedExperiment class
+* Familiarity with the GenomicRanges class
+
+* Familiarity with high-throughput genomic assays such as microarrays and 
+  next-generation sequencing
+* Familiarity with the biological definition of single nucleotide polymorphism 
+  (SNP) and copy number variation (CNV) 
+
+### Workshop Participation
+
+Execution of example code and hands-on practice
+
+### _R_ / _Bioconductor_ packages used
+
+* [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment)
+* [CNVRanger](http://bioconductor.org/packages/CNVRanger)
+* [regioneR](http://bioconductor.org/packages/regioneR)
+* [PureCN](http://bioconductor.org/packages/PureCN)
+
+### Time outline
+
+| Activity                                              | Time |
+|-------------------------------------------------------|------|
+| Overview                                              | 5m   |
+| Data representation and manipulation                  | 20m  |
+| Integrative downstream analysis (eQTL, GWAS, ...)     | 20m  |
+| Allele-specific CN analysis in cancer                 | 15m  |
+
+
+### Learning Goals
+
+* get familiar with elementary concepts of CNV analysis
+* learn how to efficiently represent, access, and manipulate CNV data 
+  in Bioconductor data structures
+* get familiar with different strategies for summarizing individual CNV
+  calls across a population
+* learn how to assess the significance of overlaps between CNVs and functional
+  genomic regions
+* learn how carry out association analysis with gene expression and quantitative
+  phenotypes
+* get familiar with allele-specific absolute CN analysis of genomic cancer data 
+ 
+### Specific objectives
+
+* understand how CNVs can be experimentally detected and computationally inferred
+  from SNP arrays and next-generation sequencing data
+* learn how to use `GRangesList` and `RaggedExperiment` to represent, access, and 
+  manipulate CNV data 
+* understand different strategies for finding recurrent CNV regions in a population,
+  including density trimming, reciprocal overlap, and recurrence significance estimation
+* learn how to use the [regioneR](http://bioconductor.org/packages/regioneR) package
+  to assess the significance of overlaps between CNVs and functional genomic regions
+  such as genes, promoters, and enhancers.
+* learn how to carry out eQTL analysis for CNV and RNA-seq data
+* learn how to carry out a GWAS analysis for CNV and quantitative phenotype data
+* learn how to estimate tumor purity and ploidy from absolute CN analysis with 
+  [PureCN](http://bioconductor.org/packages/PureCN)
+
+## Overview
+
+```{r setup, echo=FALSE}
+suppressPackageStartupMessages({ 
+    library(CNVRanger)
+    library(AnnotationHub)
+    library(regioneR)
+    library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+    library(SummarizedExperiment)
+    library(curatedTCGAData)
+    library(TCGAutils)
+    library(RaggedExperiment)
+})
+```
+
+Copy number variation (CNV) is a frequently observed deviation from the diploid 
+state due to duplication or deletion of genomic regions.
+CNVs can be experimentally detected based on comparative genomic hybridization, 
+and computationally inferred from SNP-arrays or next-generation sequencing data.
+These technologies for CNV detection have in common that they report, for each
+sample under study, genomic regions that are duplicated or deleted with respect
+to a reference.
+Such regions are denoted as _CNV calls_ in the following and will be considered
+the starting point for analysis.
+
+## Representation and manipulation of CNV data with RaggedExperiment
+
+`RaggedExperiment` is a flexible data representation for segmented copy number,
+somatic mutations such as represented in `.vcf` files, and other ragged array
+schema for genomic location data.  Like the `GRangesList` class from
+`GenomicRanges`, `RaggedExperiment` can be used to represent _differing_
+genomic ranges on each of a set of samples. In fact, `RaggedExperiment`
+contains a `GRangesList`:
+
+```{r}
+showClass("RaggedExperiment")
+```
+### Constructing a `RaggedExperiment` object
+
+We start with a toy example of two `GRanges` objects, providing ranges on two
+chromosomes in two samples:
+
+```{r}
+sample1 <- GRanges(
+    c(A = "chr1:1-10:-", B = "chr1:8-14:+", C = "chr1:15-18:+"),
+    score = 3:5, type=c("germline", "somatic", "germline"))
+sample2 <- GRanges(
+    c(D = "chr1:1-10:-", E = "chr1:11-18:+"),
+    score = 11:12, type=c("germline", "somatic"))
+```
+
+Include column data `colData` to describe the samples:
+
+```{r}
+colDat <- DataFrame(id=1:2, status = factor(c("control", "case")))
+```
+
+The `RaggedExperiment` can be constructed from individual `Granges`:
+
+```{r}
+(ragexp <- RaggedExperiment(
+    sample1 = sample1,
+    sample2 = sample2,
+    colData = colDat))
+```
+
+Or from a `GRangesList`:
+
+```{r}
+grl <- GRangesList(sample1=sample1, sample2=sample2)
+ragexp2 <- RaggedExperiment(grl, colData = colDat)
+identical(ragexp, ragexp2)
+```
+
+Note that the original ranges are is represented as the `rowRanges` of the
+`RaggedExperiment`:
+
+```{r}
+rowRanges(ragexp)
+```
+
+### `*Assay` functions
+
+`RaggedExperiment` provides a flexible set of _*Assay_ methods to
+support transformation of data to matrix format with varying row dimensions.
+
+```{r, echo=FALSE, fig.cap="RaggedExperiment object schematic. Rows and columns represent genomic ranges and samples, respectively. Assay operations can be performed with (from left to right) compactAssay, qreduceAssay, and sparseAssay.", out.width="\\maxwidth"}
+knitr::include_graphics("RaggedExperiment.png")
+```
+
+The four main _Assay_ functions for converting to matrix are:
+
+* [sparseAssay](#sparseassay): leave ranges exactly as-is
+* [compactAssay](#compactassay): combine identical ranges
+* [disjoinAssay](#disjoinassay): disjoin ranges that overlap across samples
+* [qreduceAssay](#qreduceassay): find overlaps with provided "query" ranges
+
+These each have a corresponding function for conversion to [RangedSummarizedExperiment](#Conversion to RangedSummarizedExperiment).
+
+#### sparseAssay
+
+The most straightforward matrix representation of a `RaggedExperiment` will
+return a matrix with the number of rows equal to the total number of ranges defined across all
+samples. *i.e.* the 5 rows of the `sparseAssay` result:
+
+```{r}
+sparseAssay(ragexp)
+```
+
+correspond to the ranges of the unlisted `GRangesList`:
+
+```{r}
+unlist(grl)
+```
+
+The rownames of the `sparseAssay` result are equal to the names of the `GRanges` elements.
+The values in the matrix returned by `sparseAssay` correspond to the first columns of the
+`mcols` of each `GRangesList` element, in this case the "score" column.
+
+Note, this is the default `assay()` method of `RaggedExperiment`:
+```{r}
+assay(ragexp, "score")
+assay(ragexp, "type")
+```
+
+#### compactAssay
+
+The dimensions of the `compactAssay` result differ from that of the `sparseAssay` result only
+if there are identical ranges in different samples. Identical ranges are placed in the same row in
+the output. Ranges with any difference in start, end, or strand, will be
+kept on different rows. Non-disjoint ranges are **not** collapsed.
+
+```{r}
+compactAssay(ragexp)
+compactAssay(ragexp, "type")
+```
+
+Note that row names are constructed from the ranges, and the names of the `GRanges` vectors are
+lost, unlike in the `sparseAssay` result.
+
+#### disjoinAssay
+
+This function is similar to `compactAssay` except the rows are _disjoint_[^9]
+ranges. Elements of the matrix are summarized by applying the `simplifyDisjoin`
+functional
+argument to assay values of overlapping ranges.
+
+```{r}
+disjoinAssay(ragexp, simplifyDisjoin = mean)
+```
+
+[^9]: A _disjoint_ set of ranges has no overlap between any ranges of the set.
+
+#### qreduceAssay
+
+The `qreduceAssay` function is the most complicated but likely the most useful of the `RaggedExperiment`
+*Assay* functions. It requires you to provide a `query` argument that is a `GRanges` vector, and
+the rows of the resulting matrix correspond to the elements of this `GRanges`. The returned matrix will have
+dimensions `length(query)` by `ncol(x)`. Elements of the resulting matrix correspond to the overlap of the
+_i_ th `query` range in the _j_ th sample, summarized according to the `simplifyReduce` functional argument.
+This can be useful, for example, to calculate per-gene copy number or mutation status by providing
+the genomic ranges of every gene as the `query`.
+
+The `simplifyReduce` argument in `qreduceAssay` allows the user to summarize
+overlapping regions with a custom method for the given "query" region of
+interest. We provide one for calculating a weighted average score per
+query range, where the weight is proportional to the overlap widths between
+overlapping ranges and a query range.
+
+_Note_ that there are three arguments to this function. See the documentation
+for additional details.
+
+```{r}
+weightedmean <- function(scores, ranges, qranges)
+{
+    isects <- pintersect(ranges, qranges)
+    sum(scores * width(isects)) / sum(width(isects))
+}
+```
+
+The call to `qreduceAssay` calculates the overlaps between the ranges of each sample:
+```{r}
+grl
+```
+
+with the query ranges (an arbitrary set is defined here for demonstration):
+First create a demonstration "query" region of interest:
+```{r}
+(query <- GRanges(c("chr1:1-14:-", "chr1:15-18:+")))
+```
+
+using the `simplifyReduce` function to resolve overlapping ranges and return a matrix with rows
+corresponding to the query:
+```{r}
+qreduceAssay(ragexp, query, simplifyReduce = weightedmean)
+```
+
+### Conversion to RangedSummarizedExperiment
+
+These methods all have corresponding methods to return a `RangedSummarizedExperiment` and preserve the `colData`:
+```{r, results='hide'}
+sparseSummarizedExperiment(ragexp)
+compactSummarizedExperiment(ragexp)
+disjoinSummarizedExperiment(ragexp, simplify = mean)
+qreduceSummarizedExperiment(ragexp, query=query, simplify=weightedmean)
+```
+
+Please see the `RaggedExperiment` vignette for
+[more details](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html).
+
+
