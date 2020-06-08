@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copy number variation analysis with Bioconductor • enrichOmics</title>
+<title> • CNVWorkshop</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Copy number variation analysis with Bioconductor">
+<script src="../pkgdown.js"></script><meta property="og:title" content="">
 <meta property="og:description" content="CNVWorkshop">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -30,7 +30,7 @@
         <span class="icon-bar"></span>
       </button>
       <span class="navbar-brand">
-        <a class="navbar-link" href="../index.html">enrichOmics</a>
+        <a class="navbar-link" href="../index.html">CNVWorkshop</a>
         <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.0</span>
       </span>
     </div>
@@ -61,19 +61,13 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Copy number variation analysis with Bioconductor</h1>
-                        <h4 class="author">Ludwig Geistlinger</h4>
-            <address class="author_afil">
-      CUNY School of Public Health, New York, NY<br><h4 class="author">Levi Waldron</h4>
-            <address class="author_afil">
-      CUNY School of Public Health, New York, NY<br><h4 class="date">June 08, 2020</h4>
+      <h1 data-toc-skip></h1>
+            
       
       
       <div class="hidden name"><code>Geistlinger_CNVWorkshop.Rmd</code></div>
 
-    </address>
-</address>
-</div>
+    </div>
 
     
     
@@ -88,7 +82,7 @@
 <a href="#instructors-names-and-contact-information" class="anchor"></a>Instructor(s) name(s) and contact information</h3>
 <p>Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron</p>
 <p>CUNY School of Public Health 55 W 125th St, New York, NY 10027</p>
-<p><a href="mailto:Ludwig.Geistlinger@sph.cuny.edu" class="email">Ludwig.Geistlinger@sph.cuny.edu</a> <a href="mailto:Marcel.Ramos@sph.cuny.edu" class="email">Marcel.Ramos@sph.cuny.edu</a> <a href="mailto:Sehyun.Oh@sph.cuny.edu" class="email">Sehyun.Oh@sph.cuny.edu</a> <a href="mailto:Levi.Waldron@sph.cuny.edu" class="email">Levi.Waldron@sph.cuny.edu</a></p>
+<p><a href="mailto:Ludwig.Geistlinger@sph.cuny.edu" class="email">Ludwig.Geistlinger@sph.cuny.edu</a>&lt;&gt; <a href="mailto:Marcel.Ramos@sph.cuny.edu" class="email">Marcel.Ramos@sph.cuny.edu</a>&lt;&gt; <a href="mailto:Sehyun.Oh@sph.cuny.edu" class="email">Sehyun.Oh@sph.cuny.edu</a>&lt;&gt; <a href="mailto:Levi.Waldron@sph.cuny.edu" class="email">Levi.Waldron@sph.cuny.edu</a></p>
 </div>
 <div id="workshop-description" class="section level3">
 <h3 class="hasAnchor">
@@ -382,6 +376,366 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <span class="fu">disjoinSummarizedExperiment</span>(<span class="no">ragexp</span>, <span class="kw">simplify</span> <span class="kw">=</span> <span class="no">mean</span>)
 <span class="fu">qreduceSummarizedExperiment</span>(<span class="no">ragexp</span>, <span class="kw">query</span><span class="kw">=</span><span class="no">query</span>, <span class="kw">simplify</span><span class="kw">=</span><span class="no">weightedmean</span>)</pre></body></html></div>
 <p>Please see the <code>RaggedExperiment</code> vignette for <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html">more details</a>.</p>
+</div>
+</div>
+<div id="integrative-downstream-analysis-of-cnvs-with-cnvranger" class="section level2">
+<h2 class="hasAnchor">
+<a href="#integrative-downstream-analysis-of-cnvs-with-cnvranger" class="anchor"></a>Integrative downstream analysis of CNVs with CNVRanger</h2>
+<p><img src="CNVRanger.png" width="100%"></p>
+<p><strong>(A)</strong> The <a href="http://bioconductor.org/packages/CNVRanger">CNVRanger</a> package imports CNV calls from a simple file format into <code>R</code>, and stores them in dedicated Bioconductor data structures, and <strong>(B)</strong> implements three frequently used approaches for summarizing CNV calls across a population: <em>(i)</em> the <a href="http://www.ircgp.com/CNVRuler">CNVRuler</a> that trims region margins based on regional density <a href="https://doi.org/10.1093/bioinformatics/bts239">Kim et al., 2012</a>, <em>(ii)</em> the reciprocal overlap procedure that requires sufficient mutual overlap between calls <a href="https://doi.org/10.1038/nature08516">Conrad et al., 2010</a>, and <em>(iii)</em> the <a href="http://www.broadinstitute.org/cancer/cga/gistic">GISTIC</a> procedure that identifies recurrent CNV regions <a href="https://doi.org/10.1073/pnas.0710052104">Beroukhim et al., 2007</a>. <strong>(C)</strong> <code>CNVRanger</code> builds on <a href="http://bioconductor.org/packages/regioneR">regioneR</a> for overlap analysis of CNVs with functional genomic regions, <strong>(D)</strong> implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis for CNVs by interfacing with <a href="http://bioconductor.org/packages/edgeR">edgeR</a>, and <strong>(E)</strong> interfaces with <a href="http://zzz.bwh.harvard.edu/plink">PLINK</a> for traditional genome-wide association studies (GWAS) between CNVs and quantitative phenotypes.</p>
+<p>The key parts of the functionality implemented in <code>CNVRanger</code> were developed, described, and applied in several previous studies:</p>
+<ul>
+<li><p>Genome-wide detection of CNVs and their association with meat tenderness in Nelore cattle <a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a></p></li>
+<li><p>Widespread modulation of gene expression by copy number variation in skeletal muscle <a href="https://doi.org/10.1038/s41598-018-19782-4">Geistlinger et al., 2018</a></p></li>
+<li><p>CNVs are associated with genomic architecture in a songbird <a href="https://doi.org/10.1186/s12864-018-4577-1">da Silva et al., 2018</a></p></li>
+</ul>
+<div id="reading-and-accessing-cnv-data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#reading-and-accessing-cnv-data" class="anchor"></a>Reading and accessing CNV data</h3>
+<p><code>CNVRanger</code> uses Bioconductor core data structures implemented in the <a href="http://bioconductor.org/packages/GenomicRanges">GenomicRanges</a> and <a href="http://bioconductor.org/packages/RaggedExperiment">RaggedExperiment</a> packages to represent, access, and manipulate CNV data.</p>
+<p>We start by loading the package.</p>
+<div class="sourceCode" id="cb33"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">CNVRanger</span>)</pre></body></html></div>
+<div id="input-data-format" class="section level4">
+<h4 class="hasAnchor">
+<a href="#input-data-format" class="anchor"></a>Input data format</h4>
+<p>For demonstration, we consider CNV calls as obtained with <a href="http://penncnv.openbioinformatics.org">PennCNV</a> from SNP-chip data in a Brazilian cattle breed (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>).</p>
+<p>Here, we use a data subset and only consider CNV calls on chromosome 1 and 2, for which there are roughly 3000 CNV calls as obtained for 711 samples.</p>
+<div class="sourceCode" id="cb34"><html><body><pre class="r"><span class="no">data.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">"extdata"</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">"CNVRanger"</span>)
+<span class="no">call.file</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">data.dir</span>, <span class="st">"Silva16_PONE_CNV_calls.csv"</span>)
+<span class="no">calls</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="no">call.file</span>, <span class="kw">as.is</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">calls</span>)</pre></body></html></div>
+<pre><code>## [1] 3000</code></pre>
+<div class="sourceCode" id="cb36"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">calls</span>)</pre></body></html></div>
+<pre><code>##    chr start    end    NE_id state
+## 1 chr1 16947  45013 NE001423     3
+## 2 chr1 36337  67130 NE001426     3
+## 3 chr1 16947  36337 NE001428     3
+## 4 chr1 36337 105963 NE001519     3
+## 5 chr1 36337  83412 NE001534     3
+## 6 chr1 36337  83412 NE001648     3</code></pre>
+<div class="sourceCode" id="cb38"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(<span class="no">calls</span>[,<span class="st">"NE_id"</span>]))</pre></body></html></div>
+<pre><code>## [1] 711</code></pre>
+</div>
+<div id="representation-as-a-grangeslist" class="section level4">
+<h4 class="hasAnchor">
+<a href="#representation-as-a-grangeslist" class="anchor"></a>Representation as a <code>GRangesList</code>
+</h4>
+<p>We group the calls by sample ID, resulting in a <code>GRangesList</code>. Each element of the list corresponds to a sample, and contains the genomic coordinates of the CNV calls for this sample (along with the copy number state in the <code>State</code> metadata column).</p>
+<div class="sourceCode" id="cb40"><html><body><pre class="r"><span class="no">grl</span> <span class="kw">&lt;-</span> <span class="fu">makeGRangesListFromDataFrame</span>(<span class="no">calls</span>,
+    <span class="kw">split.field</span><span class="kw">=</span><span class="st">"NE_id"</span>, <span class="kw">keep.extra.columns</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<span class="no">grl</span></pre></body></html></div>
+<pre><code>## GRangesList object of length 711:
+## $NE001357
+## GRanges object with 5 ranges and 1 metadata column:
+##       seqnames            ranges strand |     state
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1   4569526-4577608      * |         3
+##   [2]     chr1 15984544-15996851      * |         1
+##   [3]     chr1 38306432-38330161      * |         3
+##   [4]     chr1 93730576-93819471      * |         0
+##   [5]     chr2 40529044-40540747      * |         3
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## $NE001358
+## GRanges object with 1 range and 1 metadata column:
+##       seqnames              ranges strand |     state
+##          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1 105042452-105233446      * |         1
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## $NE001359
+## GRanges object with 4 ranges and 1 metadata column:
+##       seqnames            ranges strand |     state
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1   4569526-4577608      * |         3
+##   [2]     chr1 31686841-31695808      * |         0
+##   [3]     chr1 93730576-93819471      * |         0
+##   [4]     chr2   2527718-2535261      * |         0
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## ...
+## &lt;708 more elements&gt;</code></pre>
+<p>The advantage of representing the CNV calls as a <code>GRangesList</code> is that it allows to leverage the comprehensive set of operations on genomic regions implemented in the <code>GenomicRanges</code> package - for instance, sorting of the calls according to their genomic coordinates.</p>
+<div class="sourceCode" id="cb42"><html><body><pre class="r"><span class="no">grl</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span>(<span class="no">grl</span>)
+<span class="no">grl</span></pre></body></html></div>
+<pre><code>## GRangesList object of length 711:
+## $NE001357
+## GRanges object with 5 ranges and 1 metadata column:
+##       seqnames            ranges strand |     state
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1   4569526-4577608      * |         3
+##   [2]     chr1 15984544-15996851      * |         1
+##   [3]     chr1 38306432-38330161      * |         3
+##   [4]     chr1 93730576-93819471      * |         0
+##   [5]     chr2 40529044-40540747      * |         3
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## $NE001358
+## GRanges object with 1 range and 1 metadata column:
+##       seqnames              ranges strand |     state
+##          &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1 105042452-105233446      * |         1
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## $NE001359
+## GRanges object with 4 ranges and 1 metadata column:
+##       seqnames            ranges strand |     state
+##          &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##   [1]     chr1   4569526-4577608      * |         3
+##   [2]     chr1 31686841-31695808      * |         0
+##   [3]     chr1 93730576-93819471      * |         0
+##   [4]     chr2   2527718-2535261      * |         0
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths
+## 
+## ...
+## &lt;708 more elements&gt;</code></pre>
+</div>
+<div id="representation-as-a-raggedexperiment" class="section level4">
+<h4 class="hasAnchor">
+<a href="#representation-as-a-raggedexperiment" class="anchor"></a>Representation as a <code>RaggedExperiment</code>
+</h4>
+<p>An alternative matrix-like representation of the CNV calls can be obtained with the <code>RaggedExperiment</code> data class. It resembles in many aspects the <a href="http://bioconductor.org/packages/SummarizedExperiment">SummarizedExperiment</a> data class for storing gene expression data as e.g. obtained with RNA-seq.</p>
+<div class="sourceCode" id="cb44"><html><body><pre class="r"><span class="no">ra</span> <span class="kw">&lt;-</span> <span class="fu">RaggedExperiment</span>(<span class="no">grl</span>)
+<span class="no">ra</span></pre></body></html></div>
+<pre><code>## class: RaggedExperiment 
+## dim: 3000 711 
+## assays(1): state
+## rownames: NULL
+## colnames(711): NE001357 NE001358 ... NE003967 NE003968
+## colData names(0):</code></pre>
+<p>As apparent from the <code>dim</code> slot of the object, it stores the CNV calls in the rows and the samples in the columns. Note that the CN state is now represented as an assay matrix which can be easily accessed and subsetted.</p>
+<div class="sourceCode" id="cb46"><html><body><pre class="r"><span class="fu">assay</span>(<span class="no">ra</span>[<span class="fl">1</span>:<span class="fl">5</span>,<span class="fl">1</span>:<span class="fl">5</span>])</pre></body></html></div>
+<pre><code>##                        NE001357 NE001358 NE001359 NE001360 NE001361
+## chr1:4569526-4577608          3       NA       NA       NA       NA
+## chr1:15984544-15996851        1       NA       NA       NA       NA
+## chr1:38306432-38330161        3       NA       NA       NA       NA
+## chr1:93730576-93819471        0       NA       NA       NA       NA
+## chr2:40529044-40540747        3       NA       NA       NA       NA</code></pre>
+<p>As with <code>SummarizedExperiment</code> objects, additional information for the samples are annotated in the <code>colData</code> slot. For example, we annotate the steer weight and its feed conversion ratio (FCR) using simulated data. Feed conversion ratio is the ratio of dry matter intake to live-weight gain. A typical range of feed conversion ratios is 4.5-7.5 with a lower number being more desirable as it would indicate that a steer required less feed per pound of gain.</p>
+<div class="sourceCode" id="cb48"><html><body><pre class="r"><span class="no">weight</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">ra</span>), <span class="kw">mean</span><span class="kw">=</span><span class="fl">1100</span>, <span class="kw">sd</span><span class="kw">=</span><span class="fl">100</span>)
+<span class="no">fcr</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span>(<span class="no">ra</span>), <span class="kw">mean</span><span class="kw">=</span><span class="fl">6</span>, <span class="kw">sd</span><span class="kw">=</span><span class="fl">1.5</span>)
+<span class="fu">colData</span>(<span class="no">ra</span>)$<span class="no">weight</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="no">weight</span>, <span class="kw">digits</span><span class="kw">=</span><span class="fl">2</span>)
+<span class="fu">colData</span>(<span class="no">ra</span>)$<span class="no">fcr</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="no">fcr</span>, <span class="kw">digits</span><span class="kw">=</span><span class="fl">2</span>)
+<span class="fu">colData</span>(<span class="no">ra</span>)</pre></body></html></div>
+<pre><code>## DataFrame with 711 rows and 2 columns
+##             weight       fcr
+##          &lt;numeric&gt; &lt;numeric&gt;
+## NE001357   1014.82      5.83
+## NE001358   1028.22      6.05
+## NE001359   1132.89      5.86
+## NE001360   1211.85      9.18
+## NE001361   1081.68      2.89
+## ...            ...       ...
+## NE003962   1229.73      4.48
+## NE003963    983.44      9.00
+## NE003966    980.95      9.36
+## NE003967   1145.13      6.93
+## NE003968   1004.33      4.84</code></pre>
+</div>
+</div>
+<div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
+<h3 class="hasAnchor">
+<a href="#summarizing-individual-cnv-calls-across-a-population" class="anchor"></a>Summarizing individual CNV calls across a population</h3>
+<p>In CNV analysis, it is often of interest to summarize individual calls across the population, (i.e. to define CNV regions), for subsequent association analysis with expression and phenotype data. In the simplest case, this just merges overlapping individual calls into summarized regions. However, this typically inflates CNV region size, and more appropriate approaches have been developed for this purpose.</p>
+<div id="trimming-low-density-areas" class="section level4">
+<h4 class="hasAnchor">
+<a href="#trimming-low-density-areas" class="anchor"></a>Trimming low-density areas</h4>
+<p>Here, we use the approach from <a href="http://www.ircgp.com/CNVRuler">CNVRuler</a> to summarize CNV calls to CNV regions (see <a href="https://academic.oup.com/view-large/figure/83392426/bts239f1.jpeg">Figure 1</a> in <a href="https://doi.org/10.1093/bioinformatics/bts239">Kim et al., 2012</a> for an illustration of the approach). This trims low-density areas as defined by the <code>density</code> argument, which is set here to &lt;10% of the number of calls within a summarized region.</p>
+<div class="sourceCode" id="cb50"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span><span class="kw">=</span><span class="fl">0.1</span>)
+<span class="no">cnvrs</span></pre></body></html></div>
+<pre><code>## GRanges object with 303 ranges and 2 metadata columns:
+##         seqnames              ranges strand |      freq        type
+##            &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;character&gt;
+##     [1]     chr1        16947-111645      * |       103        gain
+##     [2]     chr1     1419261-1630187      * |        18        gain
+##     [3]     chr1     1896112-2004603      * |       218        gain
+##     [4]     chr1     4139727-4203274      * |         1        gain
+##     [5]     chr1     4554832-4577608      * |        23        gain
+##     ...      ...                 ...    ... .       ...         ...
+##   [299]     chr2 136310067-136322489      * |         2        loss
+##   [300]     chr2 136375337-136386940      * |         1        loss
+##   [301]     chr2 136455546-136466040      * |         1        loss
+##   [302]     chr2 136749793-136802493      * |        39        both
+##   [303]     chr2 139194749-139665914      * |        58        both
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths</code></pre>
+<p>Note that CNV frequency (number of samples overlapping each region) and CNV type (gain, loss, or both) have also been annotated in the columns <code>freq</code> and <code>type</code>, respectively.</p>
+</div>
+<div id="identifying-recurrent-regions" class="section level4">
+<h4 class="hasAnchor">
+<a href="#identifying-recurrent-regions" class="anchor"></a>Identifying recurrent regions</h4>
+<p>In particular in cancer, it is important to distinguish driver from passenger mutations, i.e. to distinguish meaningful events from random background aberrations. The <a href="http://www.broadinstitute.org/cancer/cga/gistic">GISTIC</a> method identifies those regions of the genome that are aberrant more often than would be expected by chance, with greater weight given to high amplitude events (high-level copy-number gains or homozygous deletions) that are less likely to represent random aberrations (<a href="https://doi.org/10.1073/pnas.0710052104">Beroukhim et al., 2007</a>).</p>
+<p>By setting <code>est.recur=TRUE</code>, we deploy a <code>GISTIC</code>-like significance estimation</p>
+<div class="sourceCode" id="cb52"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span><span class="kw">=</span><span class="fl">0.1</span>, <span class="kw">est.recur</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<span class="no">cnvrs</span></pre></body></html></div>
+<pre><code>## GRanges object with 303 ranges and 3 metadata columns:
+##         seqnames              ranges strand |      freq        type     pvalue
+##            &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;character&gt;  &lt;numeric&gt;
+##     [1]     chr1        16947-111645      * |       103        gain 0.00980392
+##     [2]     chr1     1419261-1630187      * |        18        gain 0.10784314
+##     [3]     chr1     1896112-2004603      * |       218        gain 0.00000000
+##     [4]     chr1     4139727-4203274      * |         1        gain 0.55882353
+##     [5]     chr1     4554832-4577608      * |        23        gain 0.08823529
+##     ...      ...                 ...    ... .       ...         ...        ...
+##   [299]     chr2 136310067-136322489      * |         2        loss  0.2361111
+##   [300]     chr2 136375337-136386940      * |         1        loss  0.4212963
+##   [301]     chr2 136455546-136466040      * |         1        loss  0.4212963
+##   [302]     chr2 136749793-136802493      * |        39        both  0.0588235
+##   [303]     chr2 139194749-139665914      * |        58        both  0.0392157
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths</code></pre>
+<p>and filter for recurrent CNVs that exceed a significance threshold of 0.05.</p>
+<div class="sourceCode" id="cb54"><html><body><pre class="r"><span class="no">cnvrs</span>[<span class="no">cnvrs</span>$<span class="no">pvalue</span> <span class="kw">&lt;</span> <span class="fl">0.05</span>]</pre></body></html></div>
+<pre><code>## GRanges object with 17 ranges and 3 metadata columns:
+##        seqnames              ranges strand |      freq        type     pvalue
+##           &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;character&gt;  &lt;numeric&gt;
+##    [1]     chr1        16947-111645      * |       103        gain 0.00980392
+##    [2]     chr1     1896112-2004603      * |       218        gain 0.00000000
+##    [3]     chr1   15984544-15996851      * |       116        loss 0.01851852
+##    [4]     chr1   31686841-31695808      * |       274        loss 0.00462963
+##    [5]     chr1   69205418-69219486      * |        46        loss 0.04166667
+##    ...      ...                 ...    ... .       ...         ...        ...
+##   [13]     chr2   97882695-97896935      * |        80        loss  0.0231481
+##   [14]     chr2 124330343-124398570      * |        39        loss  0.0462963
+##   [15]     chr2 135096060-135271140      * |        84        gain  0.0196078
+##   [16]     chr2 135290754-135553033      * |        83        gain  0.0294118
+##   [17]     chr2 139194749-139665914      * |        58        both  0.0392157
+##   -------
+##   seqinfo: 2 sequences from an unspecified genome; no seqlengths</code></pre>
+</div>
+</div>
+<div id="overlap-analysis-of-cnvs-with-functional-genomic-regions" class="section level3">
+<h3 class="hasAnchor">
+<a href="#overlap-analysis-of-cnvs-with-functional-genomic-regions" class="anchor"></a>Overlap analysis of CNVs with functional genomic regions</h3>
+<p>Once individual CNV calls have been summarized across the population, it is typically of interest whether the resulting CNV regions overlap with functional genomic regions such as genes, promoters, or enhancers. As a certain amount of overlap can be expected just by chance, an assessment of statistical significance is needed to decide whether the observed overlap is greater (enrichment) or less (depletion) than expected by chance.</p>
+<p>The <a href="http://bioconductor.org/packages/regioneR">regioneR</a> package implements a general framework for testing overlaps of genomic regions based on permutation sampling. This allows to repeatedly sample random regions from the genome, matching size and chromosomal distribution of the region set under study (here: the CNV regions). By recomputing the overlap with the functional features in each permutation, statistical significance of the observed overlap can be assessed.</p>
+<p>We demonstrate in the following how this strategy can be used to assess the overlap between the detected CNV regions and protein-coding regions in the cattle genome. We expect to find a depletion as protein-coding regions are highly conserved and rarely subject to long-range structural variation such as CNV. Hence, is the overlap between CNVs and protein-coding genes less than expected by chance?</p>
+<p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
+<div class="sourceCode" id="cb56"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
+<span class="no">ah</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
+<pre><code>## using temporary cache /tmp/RtmptPwZXX/BiocFileCache</code></pre>
+<pre><code>## snapshotDate(): 2020-05-23</code></pre>
+<div class="sourceCode" id="cb59"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
+<span class="no">ahDb</span></pre></body></html></div>
+<pre><code>## AnnotationHub with 14 records
+## # snapshotDate(): 2020-05-23
+## # $dataprovider: Ensembl
+## # $species: Bos taurus
+## # $rdataclass: EnsDb
+## # additional mcols(): taxonomyid, genome, description,
+## #   coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags,
+## #   rdatapath, sourceurl, sourcetype 
+## # retrieve records with, e.g., 'object[["AH53189"]]' 
+## 
+##             title                           
+##   AH53189 | Ensembl 87 EnsDb for Bos Taurus 
+##   AH53693 | Ensembl 88 EnsDb for Bos Taurus 
+##   AH56658 | Ensembl 89 EnsDb for Bos Taurus 
+##   AH57731 | Ensembl 90 EnsDb for Bos Taurus 
+##   AH60745 | Ensembl 91 EnsDb for Bos Taurus 
+##   ...       ...                             
+##   AH69141 | Ensembl 96 EnsDb for Bos taurus 
+##   AH73832 | Ensembl 97 EnsDb for Bos taurus 
+##   AH74957 | Ensembl 98 EnsDb for Bos taurus 
+##   AH78724 | Ensembl 99 EnsDb for Bos taurus 
+##   AH79622 | Ensembl 100 EnsDb for Bos taurus</code></pre>
+<p>and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).</p>
+<div class="sourceCode" id="cb61"><html><body><pre class="r"><span class="no">ahEdb</span> <span class="kw">&lt;-</span> <span class="no">ahDb</span><span class="kw">[[</span><span class="st">"AH60948"</span>]]</pre></body></html></div>
+<pre><code>## downloading 1 resources</code></pre>
+<pre><code>## retrieving 1 resource</code></pre>
+<pre><code>## loading from cache</code></pre>
+<pre><code>## require("ensembldb")</code></pre>
+<div class="sourceCode" id="cb66"><html><body><pre class="r"><span class="no">bt.genes</span> <span class="kw">&lt;-</span> <span class="fu">genes</span>(<span class="no">ahEdb</span>)
+<span class="fu">seqlevels</span>(<span class="no">bt.genes</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fu">seqlevels</span>(<span class="no">bt.genes</span>))
+<span class="no">bt.genes</span></pre></body></html></div>
+<pre><code>## GRanges object with 24616 ranges and 8 metadata columns:
+##                      seqnames              ranges strand |            gene_id
+##                         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; |        &lt;character&gt;
+##   ENSBTAG00000046619     chr1         19774-19899      - | ENSBTAG00000046619
+##   ENSBTAG00000006858     chr1         34627-35558      + | ENSBTAG00000006858
+##   ENSBTAG00000039257     chr1         69695-71121      - | ENSBTAG00000039257
+##   ENSBTAG00000035349     chr1         83323-84281      - | ENSBTAG00000035349
+##   ENSBTAG00000001753     chr1       124849-179713      - | ENSBTAG00000001753
+##                  ...      ...                 ...    ... .                ...
+##   ENSBTAG00000025951     chrX 148526584-148535857      + | ENSBTAG00000025951
+##   ENSBTAG00000029592     chrX 148538917-148539037      - | ENSBTAG00000029592
+##   ENSBTAG00000016989     chrX 148576705-148582356      - | ENSBTAG00000016989
+##   ENSBTAG00000025952     chrX 148774930-148780901      - | ENSBTAG00000025952
+##   ENSBTAG00000047839     chrX 148804071-148805135      + | ENSBTAG00000047839
+##                        gene_name   gene_biotype seq_coord_system
+##                      &lt;character&gt;    &lt;character&gt;      &lt;character&gt;
+##   ENSBTAG00000046619     RF00001           rRNA       chromosome
+##   ENSBTAG00000006858                 pseudogene       chromosome
+##   ENSBTAG00000039257             protein_coding       chromosome
+##   ENSBTAG00000035349                 pseudogene       chromosome
+##   ENSBTAG00000001753             protein_coding       chromosome
+##                  ...         ...            ...              ...
+##   ENSBTAG00000025951             protein_coding       chromosome
+##   ENSBTAG00000029592     RF00001           rRNA       chromosome
+##   ENSBTAG00000016989             protein_coding       chromosome
+##   ENSBTAG00000025952             protein_coding       chromosome
+##   ENSBTAG00000047839       P2RY8 protein_coding       chromosome
+##                                 description      gene_id_version      symbol
+##                                 &lt;character&gt;          &lt;character&gt; &lt;character&gt;
+##   ENSBTAG00000046619                   NULL ENSBTAG00000046619.1     RF00001
+##   ENSBTAG00000006858                   NULL ENSBTAG00000006858.5            
+##   ENSBTAG00000039257                   NULL ENSBTAG00000039257.2            
+##   ENSBTAG00000035349                   NULL ENSBTAG00000035349.3            
+##   ENSBTAG00000001753                   NULL ENSBTAG00000001753.4            
+##                  ...                    ...                  ...         ...
+##   ENSBTAG00000025951                   NULL ENSBTAG00000025951.4            
+##   ENSBTAG00000029592                   NULL ENSBTAG00000029592.1     RF00001
+##   ENSBTAG00000016989                   NULL ENSBTAG00000016989.5            
+##   ENSBTAG00000025952                   NULL ENSBTAG00000025952.3            
+##   ENSBTAG00000047839 P2Y receptor family .. ENSBTAG00000047839.1       P2RY8
+##                       entrezid
+##                         &lt;list&gt;
+##   ENSBTAG00000046619        NA
+##   ENSBTAG00000006858        NA
+##   ENSBTAG00000039257        NA
+##   ENSBTAG00000035349        NA
+##   ENSBTAG00000001753    507243
+##                  ...       ...
+##   ENSBTAG00000025951        NA
+##   ENSBTAG00000029592        NA
+##   ENSBTAG00000016989        NA
+##   ENSBTAG00000025952    785083
+##   ENSBTAG00000047839 100299937
+##   -------
+##   seqinfo: 48 sequences from UMD3.1 genome</code></pre>
+<p>To speed up the example, we restrict analysis to chromosomes 1 and 2.</p>
+<div class="sourceCode" id="cb68"><html><body><pre class="r"><span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="no">bt.genes</span>[<span class="fu">seqnames</span>(<span class="no">bt.genes</span>) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)]
+<span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="no">sel.genes</span>[<span class="no">sel.genes</span>$<span class="no">gene_biotype</span> <span class="kw">==</span> <span class="st">"protein_coding"</span>]
+<span class="no">sel.cnvrs</span> <span class="kw">&lt;-</span> <span class="no">cnvrs</span>[<span class="fu">seqnames</span>(<span class="no">cnvrs</span>) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)]</pre></body></html></div>
+<p>Now, we are applying an overlap permutation test with 100 permutations (<code>ntimes=100</code>), while maintaining chromosomal distribution of the CNV region set (<code>per.chromosome=TRUE</code>). Furthermore, we use the option <code>count.once=TRUE</code> to count an overlapping CNV region only once, even if it overlaps with 2 or more genes. We also allow random regions to be sampled from the entire genome (<code>mask=NA</code>), although in certain scenarios masking certain regions such as telomeres and centromeres is advisable. Also note that we use 100 permutations for demonstration only. To draw robust conclusions a minimum of 1000 permutations should be carried out.</p>
+<div class="sourceCode" id="cb69"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">regioneR</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">BSgenome.Btaurus.UCSC.bosTau6.masked</span>)
+<span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/regioneR/man/overlapPermTest.html">overlapPermTest</a></span>(<span class="kw">A</span><span class="kw">=</span><span class="no">sel.cnvrs</span>, <span class="kw">B</span><span class="kw">=</span><span class="no">sel.genes</span>, <span class="kw">ntimes</span><span class="kw">=</span><span class="fl">100</span>,
+    <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
+<span class="no">res</span></pre></body></html></div>
+<pre><code>## $numOverlaps
+## P-value: 0.0297029702970297
+## Z-score: -2.1103
+## Number of iterations: 100
+## Alternative: less
+## Evaluation of the original region set: 97
+## Evaluation function: numOverlaps
+## Randomization function: randomizeRegions
+## 
+## attr(,"class")
+## [1] "permTestResultsList"</code></pre>
+<div class="sourceCode" id="cb71"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    96.0   108.8   114.0   113.9   120.0   134.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 113.9 <span class="math inline">\(\pm\)</span> 8.</p>
+<p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
+<p>Note: the function <code><a href="https://rdrr.io/pkg/regioneR/man/permTest.html">regioneR::permTest</a></code> allows to incorporate user-defined functions for randomizing regions and evaluating additional measures of overlap such as total genomic size in bp.</p>
 </div>
 </div>
 </div>
