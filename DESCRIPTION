@@ -34,9 +34,11 @@ Suggests:
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     BSgenome.Btaurus.UCSC.bosTau6.masked, 
     knitr,
-    rmarkdown
+    rmarkdown,
+    pkgdown
 License: Artistic-2.0
 Encoding: UTF-8
+LazyData: true
 VignetteBuilder: knitr
 biocViews: 
     CopyNumberVariation,
