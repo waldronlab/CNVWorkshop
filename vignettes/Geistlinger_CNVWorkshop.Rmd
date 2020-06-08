@@ -1,11 +1,4 @@
 ---
-title: Copy number variation analysis with Bioconductor
-author:
-- name: Ludwig Geistlinger
-  affiliation: CUNY School of Public Health, New York, NY
-- name: Levi Waldron
-  affiliation: CUNY School of Public Health, New York, NY
-date: "`r format(Sys.time(), '%B %d, %Y')`"
 vignette: >
   %\VignetteIndexEntry{Copy number variation analysis with Bioconductor}
   %\VignetteEngine{knitr::rmarkdown}
@@ -31,9 +24,9 @@ Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 CUNY School of Public Health
 55 W 125th St, New York, NY 10027
 
-Ludwig.Geistlinger@sph.cuny.edu
-Marcel.Ramos@sph.cuny.edu
-Sehyun.Oh@sph.cuny.edu
+Ludwig.Geistlinger@sph.cuny.edu<\br>
+Marcel.Ramos@sph.cuny.edu<\br>
+Sehyun.Oh@sph.cuny.edu<\br>
 Levi.Waldron@sph.cuny.edu
 
 ### Workshop Description
@@ -324,5 +317,292 @@ qreduceSummarizedExperiment(ragexp, query=query, simplify=weightedmean)
 
 Please see the `RaggedExperiment` vignette for
 [more details](http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html).
+
+## Integrative downstream analysis of CNVs with CNVRanger
+
+```{r, echo=FALSE}
+knitr::include_graphics("CNVRanger.png")
+```
+
+**(A)** The [CNVRanger](http://bioconductor.org/packages/CNVRanger) package
+imports CNV calls from a simple file format into 
+`R`, and stores them in dedicated Bioconductor data structures, and 
+**(B)** implements three frequently used approaches for summarizing CNV calls 
+across a population: 
+_(i)_ the [CNVRuler](http://www.ircgp.com/CNVRuler)
+that trims region margins based on regional density
+[Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239), 
+_(ii)_ the reciprocal overlap procedure that requires sufficient mutual overlap 
+between calls 
+[Conrad et al., 2010](https://doi.org/10.1038/nature08516), and
+_(iii)_ the [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) procedure 
+that identifies recurrent CNV regions
+[Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104).
+**(C)** `CNVRanger` builds on [regioneR](http://bioconductor.org/packages/regioneR) 
+for overlap analysis of CNVs with functional genomic regions, 
+**(D)** implements RNA-seq expression Quantitative Trait Loci (eQTL) analysis 
+for CNVs by interfacing with [edgeR](http://bioconductor.org/packages/edgeR), and 
+**(E)** interfaces with
+[PLINK](http://zzz.bwh.harvard.edu/plink) for traditional
+genome-wide association studies (GWAS) between CNVs and quantitative phenotypes.
+
+The key parts of the functionality implemented in `CNVRanger` were developed,
+described, and applied in several previous studies:
+
+- Genome-wide detection of CNVs and their association with meat tenderness in 
+    Nelore cattle
+    [da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)
+
+- Widespread modulation of gene expression by copy number variation in skeletal 
+    muscle
+    [Geistlinger et al., 2018](https://doi.org/10.1038/s41598-018-19782-4)
+
+- CNVs are associated with genomic architecture in a songbird 
+    [da Silva et al., 2018](https://doi.org/10.1186/s12864-018-4577-1)
+
+### Reading and accessing CNV data
+
+`CNVRanger` uses Bioconductor core data structures 
+implemented in the [GenomicRanges](http://bioconductor.org/packages/GenomicRanges) 
+and [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment) 
+packages to represent, access, and manipulate CNV data.
+
+We start by loading the package.
+
+```{r lib}
+library(CNVRanger)
+```
+
+#### Input data format
+
+For demonstration, we consider CNV calls as obtained with 
+[PennCNV](http://penncnv.openbioinformatics.org) from SNP-chip data in a 
+Brazilian cattle breed 
+([da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)).
+
+Here, we use a data subset and only consider CNV calls on chromosome 1 and 2,
+for which there are roughly 3000 CNV calls as obtained for 711 samples. 
+
+```{r readCalls}
+data.dir <- system.file("extdata", package="CNVRanger")
+call.file <- file.path(data.dir, "Silva16_PONE_CNV_calls.csv")
+calls <- read.csv(call.file, as.is=TRUE)
+nrow(calls)
+head(calls)
+```
+
+```{r nrSamples}
+length(unique(calls[,"NE_id"]))
+```
+
+#### Representation as a `GRangesList`
+
+We group the calls by sample ID, resulting in a `GRangesList`.
+Each element of the list corresponds to a sample, and contains the genomic 
+coordinates of the CNV calls for this sample (along with the copy number state 
+in the `State` metadata column).  
+
+```{r cnvCalls}
+grl <- makeGRangesListFromDataFrame(calls, 
+    split.field="NE_id", keep.extra.columns=TRUE)
+grl
+```
+
+The advantage of representing the CNV calls as a `GRangesList` is that it allows
+to leverage the comprehensive set of operations on genomic regions implemented 
+in the `GenomicRanges` package - for instance, sorting of the calls 
+according to their genomic coordinates.
+
+```{r sortCalls}
+grl <- sort(grl)
+grl
+```
+
+#### Representation as a `RaggedExperiment`
+
+An alternative matrix-like representation of the CNV calls can be obtained with 
+the `RaggedExperiment` data class. 
+It resembles in many aspects the 
+[SummarizedExperiment](http://bioconductor.org/packages/SummarizedExperiment)
+data class for storing gene expression data as e.g. obtained with RNA-seq. 
+
+```{r RaggedExperiment}
+ra <- RaggedExperiment(grl)
+ra
+```
+
+As apparent from the `dim` slot of the object, it stores the CNV calls in the 
+rows and the samples in the columns. 
+Note that the CN state is now represented as an assay matrix which can be 
+easily accessed and subsetted.   
+
+```{r RaggedExperiment-assay}
+assay(ra[1:5,1:5])
+```
+
+As with `SummarizedExperiment` objects, additional information for 
+the samples are annotated in the `colData` slot.
+For example, we annotate the steer weight and its feed conversion ratio (FCR) 
+using simulated data.
+Feed conversion ratio is the ratio of dry matter intake to live-weight gain. 
+A typical range of feed conversion ratios is 4.5-7.5 with a lower number being 
+more desirable as it would indicate that a steer required less feed per pound of
+gain.
+
+```{r RaggedExperiment-colData}
+weight <- rnorm(ncol(ra), mean=1100, sd=100)
+fcr <- rnorm(ncol(ra), mean=6, sd=1.5)
+colData(ra)$weight <- round(weight, digits=2)
+colData(ra)$fcr <- round(fcr, digits=2)
+colData(ra)
+```
+
+### Summarizing individual CNV calls across a population
+
+In CNV analysis, it is often of interest to summarize individual calls across
+the population, (i.e. to define CNV regions), for subsequent association
+analysis with expression and phenotype data.
+In the simplest case, this just merges overlapping individual calls into 
+summarized regions.
+However, this typically inflates CNV region size, and more appropriate approaches
+have been developed for this purpose.
+
+#### Trimming low-density areas
+
+Here, we use the approach from [CNVRuler](http://www.ircgp.com/CNVRuler) 
+to summarize CNV calls to CNV regions (see 
+[Figure 1](https://academic.oup.com/view-large/figure/83392426/bts239f1.jpeg)
+in 
+[Kim et al., 2012](https://doi.org/10.1093/bioinformatics/bts239)
+for an illustration of the approach). 
+This trims low-density areas as defined by the `density` argument, 
+which is set here to <10\% of the number of calls within a summarized region.
+
+```{r cnvrs}
+cnvrs <- populationRanges(grl, density=0.1)
+cnvrs
+```
+
+Note that CNV frequency (number of samples overlapping each region) and CNV type
+(gain, loss, or both) have also been annotated in the columns `freq` and `type`,
+respectively.
+
+#### Identifying recurrent regions
+
+In particular in cancer, it is important to distinguish driver from 
+passenger mutations, i.e. to distinguish meaningful events from random 
+background aberrations. 
+The [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) method identifies 
+those regions of the genome that are aberrant more often than would be expected 
+by chance, with greater weight given to high amplitude events 
+(high-level copy-number gains or homozygous deletions) that are less likely to 
+represent random aberrations 
+([Beroukhim et al., 2007](https://doi.org/10.1073/pnas.0710052104)).
+
+By setting `est.recur=TRUE`, we deploy a `GISTIC`-like significance estimation 
+
+```{r gistic}
+cnvrs <- populationRanges(grl, density=0.1, est.recur=TRUE)
+cnvrs
+```
+
+and filter for recurrent CNVs that exceed a significance threshold of 0.05. 
+
+```{r recurr}
+cnvrs[cnvrs$pvalue < 0.05]
+```
+
+### Overlap analysis of CNVs with functional genomic regions
+
+Once individual CNV calls have been summarized across the population, it is 
+typically of interest whether the resulting CNV regions overlap with functional 
+genomic regions such as genes, promoters, or enhancers. 
+As a certain amount of overlap can be expected just by chance, an assessment of 
+statistical significance is needed to decide whether the observed overlap is 
+greater (enrichment) or less (depletion) than expected by chance. 
+
+The 
+[regioneR](http://bioconductor.org/packages/regioneR) 
+package implements a general framework for testing 
+overlaps of genomic regions based on permutation sampling.
+This allows to repeatedly sample random regions from the genome, matching size 
+and chromosomal distribution of the region set under study (here: the CNV regions).
+By recomputing the overlap with the functional features in each permutation, 
+statistical significance of the observed overlap can be assessed.
+
+We demonstrate in the following how this strategy can be used to assess the 
+overlap between the detected CNV regions and protein-coding regions in the 
+cattle genome. 
+We expect to find a depletion as protein-coding regions are highly conserved and
+rarely subject to long-range structural variation such as CNV. 
+Hence, is the overlap between CNVs and protein-coding genes less than expected by
+chance?
+
+To obtain the location of protein-coding genes, we query available 
+_Bos taurus_ annotation from Ensembl 
+
+```{r getBtGenes}
+library(AnnotationHub)
+ah <- AnnotationHub()
+ahDb <- query(ah, pattern = c("Bos taurus", "EnsDb"))
+ahDb
+```
+
+and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).
+
+```{r getBtGenes2}
+ahEdb <- ahDb[["AH60948"]]
+bt.genes <- genes(ahEdb)
+seqlevels(bt.genes) <- paste0("chr", seqlevels(bt.genes))
+bt.genes
+```
+
+To speed up the example, we restrict analysis to chromosomes 1 and 2. 
+
+```{r formatBtGenes}
+sel.genes <- bt.genes[seqnames(bt.genes) %in% c("chr1", "chr2")]
+sel.genes <- sel.genes[sel.genes$gene_biotype == "protein_coding"]
+sel.cnvrs <- cnvrs[seqnames(cnvrs) %in% c("chr1", "chr2")]
+```
+
+Now, we are applying an overlap permutation test with 100 permutations
+(`ntimes=100`), while maintaining chromosomal distribution of the CNV
+region set (`per.chromosome=TRUE`). 
+Furthermore, we use the option `count.once=TRUE` to count an overlapping CNV 
+region only once, even if it overlaps with 2 or more genes.
+We also allow random regions to be sampled from the entire genome (`mask=NA`),
+although in certain scenarios masking certain regions such as telomeres and 
+centromeres is advisable.
+Also note that we use 100 permutations for demonstration only.
+To draw robust conclusions a minimum of 1000 permutations should be carried out.
+
+```{r ovlpTest}
+library(regioneR)
+library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+res <- suppressWarnings(overlapPermTest(A=sel.cnvrs, B=sel.genes, ntimes=100, 
+    genome="bosTau6", mask=NA, per.chromosome=TRUE, count.once=TRUE))
+res
+```
+
+```{r permDist}
+summary(res[[1]]$permuted)
+```
+
+The resulting permutation *p*-value indicates a significant depletion. Out of
+the `r length(sel.cnvrs)` CNV regions, `r res[[1]]$observed` overlap with at 
+least one gene. 
+In contrast, when repeatedly drawing random regions matching the CNV regions in 
+size and chromosomal distribution, the mean number of overlapping
+regions across permutations was `r round(mean(res[[1]]$permuted), digits=1)` 
+$\pm$ `r round(sd(res[[1]]$permuted), digits=1)`.
+
+This finding is consistent with our observations across the whole genome
+([da Silva et al., 2016](https://doi.org/10.1371/journal.pone.0157711)) 
+and findings from the 1000 Genomes Poject 
+([Sudmant et al., 2015](https://www.nature.com/articles/nature15394)).
+
+Note: the function `regioneR::permTest` allows to incorporate user-defined
+functions for randomizing regions and evaluating additional measures of overlap
+such as total genomic size in bp.
 
 
