@@ -6,7 +6,6 @@ author:
 - name: Levi Waldron
   affiliation: CUNY School of Public Health, New York, NY
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output:
 vignette: >
   %\VignetteIndexEntry{Copy number variation analysis with Bioconductor}
   %\VignetteEngine{knitr::rmarkdown}
