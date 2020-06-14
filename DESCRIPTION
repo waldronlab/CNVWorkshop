@@ -31,11 +31,12 @@ Imports:
     statmod
 Suggests:
     AnnotationHub,
-    TxDb.Hsapiens.UCSC.hg19.knownGene,
     BSgenome.Btaurus.UCSC.bosTau6.masked, 
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
     knitr,
-    rmarkdown,
-    pkgdown
+    org.Hs.eg.db,
+    pkgdown,
+    rmarkdown
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
