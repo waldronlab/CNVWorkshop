@@ -7,7 +7,6 @@ output:
   html_document:
     mathjax: null   
 ---
-
 # Copy number variation analysis with Bioconductor
 
 ```{r, include=FALSE}
@@ -605,4 +604,352 @@ Note: the function `regioneR::permTest` allows to incorporate user-defined
 functions for randomizing regions and evaluating additional measures of overlap
 such as total genomic size in bp.
 
+### CNV-expression association analysis
 
+Studies of expression quantitative trait loci (eQTLs) aim at the discovery of 
+genetic variants that explain variation in gene expression levels 
+([Nica and Dermitzakis, 2013](https://www.ncbi.nlm.nih.gov/pubmed/23650636)).
+Mainly applied in the context of SNPs, the concept also naturally extends to the
+analysis of CNVs. 
+
+The `CNVRanger` package implements association testing between CNV 
+regions and RNA-seq read counts using `edgeR`, which applies 
+generalized linear models based on the negative-binomial distribution 
+while incorporating normalization factors for different library sizes.
+
+In the case of only one CN state deviating from 2n for a CNV region under 
+investigation, this reduces to the classical 2-group
+comparison.  For more than two states (e.g. 0n, 1n, 2n), edgeR’s
+ANOVA-like test is applied to test all deviating groups for
+significant expression differences relative to 2n.
+
+#### Working with individual CNV and RNA-seq assays
+
+We demonstrate the functionality by loading RNA-seq read count data from 
+skeletal muscle samples for 183 Nelore cattle steers, which we analyzed for 
+CNV-expression effects as previously described 
+([Geistlinger et al., 2018](https://doi.org/10.1038/s41598-018-19782-4)).
+
+```{r rseqdata}
+rseq.file <- file.path(data.dir, "counts_cleaned.txt")
+rcounts <- read.delim(rseq.file, row.names=1, stringsAsFactors=FALSE)
+rcounts <- as.matrix(rcounts)
+dim(rcounts)
+rcounts[1:5, 1:5]
+```
+
+For demonstration, we restrict analysis to the 939 genes on chromosome 1 and 2, 
+and store the RNA-seq expression data in a `SummarizedExperiment`.
+
+```{r rse}
+library(SummarizedExperiment)
+rse <- SummarizedExperiment(assays=list(rcounts=rcounts), 
+                rowRanges=granges(sel.genes)[rownames(rcounts)])
+rse
+```
+
+Assuming distinct modes of action, effects observed in the CNV-expression analysis 
+are typically divided into (i) local effects (*cis*), where expression changes 
+coincide with CNVs in the respective genes, and (ii) distal effects (*trans*), where
+CNVs supposedly affect trans-acting regulators such as transcription factors.
+
+However, due to power considerations and to avoid detection of spurious effects,
+stringent filtering of (i) not sufficiently expressed genes, and (ii) CNV regions
+with insufficient sample size in groups deviating from 2n, should be carried out 
+when testing for distal effects. 
+Local effects have a clear spatial indication and the number of genes locating 
+in or close to a CNV region of interest is typically small; testing for 
+differential expression between CN states is thus generally better powered for 
+local effects and less stringent filter criteria can be applied. 
+
+In the following, we carry out CNV-expression association analysis by providing 
+the CNV regions to test (`cnvrs`), the individual CNV calls (`grl`) to determine 
+per-sample CN state in each CNV region, the RNA-seq read counts (`rse`),
+and the size of the genomic window around each CNV region (`window`).
+The `window` argument thereby determines which genes are considered for testing 
+for each CNV region and is set here to 1 Mbp. 
+
+Further, use the `min.cpm` and `min.samples` arguments to exclude from the 
+analysis (i) genes with fewer than `min.cpm` reads per million reads mapped 
+(cpm, counts per million), and (ii) CNV 
+regions with fewer than `min.samples` samples in a group deviating from 2n.
+
+```{r cnvEQTL}
+res <- cnvEQTL(cnvrs, grl, rse, window="1Mbp", verbose=TRUE)
+res
+```
+
+The resulting `DataFrame` contains in the first column the CNV regions tested. 
+The second column contains the genes tested in the genomic window around each CNV 
+region, and the other columns report (i) log2 fold change with respect to the 
+2n group, (ii) edgeR's DE _p_-value, and (iii) the (per default) Benjamini-Hochberg adjusted _p_-value. 
+
+#### Working with TCGA data stored in a `MultiAssayExperiment`
+
+In the previous section, we individually prepared the CNV and RNA-seq data for 
+CNV-expression association analysis.
+In the following, we demonstrate how to perform an integrated preparation of the
+two assays when stored in a 
+[MultiAssayExperiment](http://bioconductor.org/packages/MultiAssayExperiment)
+We therefore consider glioblastoma 
+[GBM](https://cancergenome.nih.gov/cancersselected/glioblastomamultiforme) 
+data from 
+The Cancer Genome Atlas [TCGA](https://cancergenome.nih.gov), 
+which can conveniently be accessed with the 
+[curatedTCGAData](http://bioconductor.org/packages/curatedTCGAData) package.
+
+```{r tcgaSetup}
+library(curatedTCGAData)
+suppressMessages(
+    gbm <- curatedTCGAData("GBM", 
+        assays=c("GISTIC_Peaks", "CNVSNP", "RNASeq2GeneNorm"), 
+        dry.run=FALSE)
+)
+gbm
+```
+
+The returned `MultiAssayExperiment` contains three assays:
+
+- the SNP-based CNV calls stored in a `RaggedExperiment` (`GBM_CNVSNP`),
+- the recurrent CNV regions summarized across the population using the
+    [GISTIC](http://www.broadinstitute.org/cancer/cga/gistic) method 
+    (`GBM_GISTIC_Peaks`), and
+- the normalized RNA-seq gene expression values in a `SummarizedExperiment` 
+    (`GBM_RNASeq2GeneNorm`).
+
+To annotate the genomic coordinates of the genes measured in the RNA-seq assay, 
+we use the function `symbolsToRanges` from the 
+[TCGAutils](http://bioconductor.org/packages/TCGAutils) package.
+For demonstration, we restrict the analysis to chromosome 1 and 2. 
+
+```{r tcgaGeneAnno}
+library(TCGAutils)
+gbm <- suppressMessages(symbolsToRanges(gbm, unmapped=FALSE))
+for(i in 1:3) 
+{
+    genome(rowRanges(gbm[[i]])) <- "hg19"
+    seqlevelsStyle(rowRanges(gbm[[i]])) <- "UCSC"
+    ind <- as.character(seqnames(rowRanges(gbm[[i]]))) %in% c("chr1", "chr2")
+    gbm[[i]] <- gbm[[i]][ind,]
+}
+gbm
+```
+
+We now restrict the analysis to intersecting patients of the three assays 
+using `MultiAssayExperiment`'s `intersectColumns` function, and select 
+_Primary Solid Tumor_ samples using the `splitAssays` function from the 
+`TCGAutils` package.
+
+```{r gbmIntersect}
+gbm <- intersectColumns(gbm)
+sampleTables(gbm)
+data(sampleTypes)
+sampleTypes
+gbm <- splitAssays(gbm, sampleCodes="01")
+gbm
+```
+
+We transform CN estimates into CN states where states are encoded as:
+
+- `0`: homozygous deletion (2-copy loss)
+- `1`: heterozygous deletion (1-copy loss)
+- `2`: normal diploid state
+- `3`: 1-copy gain
+- `4`: amplification (>= 2-copy gain)  
+
+```{r transformToStates}
+ind <- grep("CNVSNP", names(gbm))
+state <- round(mcols(gbm[[ind]])$Segment_Mean)
+state[state > 2] <- 2
+state[state < -2] <- -2
+mcols(gbm[[ind]])$State <- state + 2
+mcols(gbm[[ind]]) <- mcols(gbm[[ind]])[,3:1]
+table(mcols(gbm[[ind]])$State)
+```
+
+The data is now ready for CNV-expression association analysis, where we find 
+only two CNV regions with sufficient sample size for testing using the default
+value of 10 for the `minSamples` argument.
+
+```{r gbmEQTL}
+res <- cnvEQTL(cnvrs="01_GBM_GISTIC_Peaks-20160128", 
+    calls="01_GBM_CNVSNP-20160128", 
+    rcounts="01_GBM_RNASeq2GeneNorm-20160128_ranged", 
+    data=gbm, window="1Mbp", verbose=TRUE)
+res
+```
+
+## Allele-specific CNV analysis with PureCN
+
+For allele-specific copy number alteration (CNA) analysis, most commonly used tools in the field rely on high quality genome-wide data with matched normal profiles, limiting their applicability in clinical settings. 
+
+Here, we're introducing the open-source [PureCN](http://bioconductor.org/packages/PureCN) R/Bioconductor package in conjunction with widely used variant-calling and copy number segmentation algorithms, for allele-specific CNA analysis from whole exome sequencing (WES) _**without matched normals**_. 
+
+Further information on PureCN and its CNV analysis workflow can be found in the 
+[PureCN vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf), [PureCN paper](https://doi.org/10.1186/s13029-016-0060-z), and [CNV analysis workflow paper](https://www.biorxiv.org/content/10.1101/552711v1).
+
+### Overview of the workflow
+Detailed scripts are available in this [GitHub repo](https://github.com/shbrief/CNVWorkflow_Code).
+
+#### Prepare input files using PureCN and MuTect
+
+PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.
+
+##### 1. BED file
+we are analyzing WES data, so we need to know which part of the genome is captured through BED file.
+
+##### 2. _**Process-matched**_ normal BAM files
+these allow us to find out what kinds of backgrounds are there, especially technical biases.   
+
+##### 3. Tumor BAM files
+these contain the genetic changes, both germline and somatic alternations.   
+<br>
+
+```{r echo=FALSE, fig.height=2, fig.width=2}
+knitr::include_graphics("overview_1.png")
+```
+
+<br>
+
+#### Five intermediate files
+Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with `PureCN.R` command line tool.
+
+##### 1. Interval file   
+IntervalFile.R command line tool optimize the targets for copy number calling, for example, 
+
+* large targets are split to obtain higher resolution   
+* targets in regions of low mappability are dropped   
+
+One thing you should be careful is to make sure that the genome version of target file matches the reference.   
+
+#### 2. VCF and stats files   
+```{r eval=FALSE}
+java -jar mutect.jar \
+    --analysis_type MuTect \
+    -R hg38.fasta \
+    --dbsnp $DBSNP_VCF \
+    --cosmic $COSMIC_VCF \
+    -I:tumor $BAM_TUMOR  \
+    -o $OUT/${SAMPLEID}_mutect_stats.txt \
+    -vcf $OUT/${SAMPLEID}_mutect.vcf
+```
+
+Output VCF files contain both germline SNPs and somatic mutations, which  have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. `call_stats.txt` file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.
+
+#### 3. Pool of normals (PoN) 
+For this workflow, MuTect is run on `--artifact-detection-mode`, 
+
+* which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
+* which includes variant calls that are clearly germline
+* which is commonly used for Panel-Of-Normals creation      
+
+```{bash eval=FALSE}
+java -jar mutect.jar \
+   --analysis_type MuTect \
+   -R hg38.fasta \
+   --artifact_detection_mode \
+   --dbsnp $DBSNP_VCF \
+   --cosmic $COSMIC_VCF \
+   -dt None \
+   -I:tumor $BAM_NORMAL  \
+   -o $OUT/${SAMPLEID}_pon_stats.txt \
+   -vcf $OUT/${SAMPLEID}_pon.vcf
+```
+
+Depending on the type of variant you're looking for, the PON will be generated differently. What all PONs have in common is that,
+
+* they are made from normal samples (in this context, "normal" means derived from healthy tissue that is believed to not have any somatic alterations) and 
+* their main purpose is to capture recurrent technical artifacts in order to improve the results of the variant calling analysis.  
+
+##### 4. GC-normalized coverage files  
+`Coverage.R` process tumor and normal bam files to calculate GC-normalized coverages. Different library can give different coverage profiles, and the most important library-specific bias is due to GC-content. i.e. regions of high AT- or GC-content are not always captured with exactly the same efficiency in tumor and normals.
+
+##### 5. NormalDB   
+To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).   
+
+Three outputs from this process are used for PureCN,
+
+* a database of normal samples, which will be used to normalize tumor coverages,   
+* mapping bias information of each variant. By examining the coverage of particular intervals in a pool of normals, we can estimate how well this assay captures these intervals and will then adjust the tumor coverage accordingly.    
+* Last is an interval weight file. Interval weights will be set proportional to the inverse of coverage standard deviation across all normals. Intervals with high variance in coverage in the pool of normals are thus down-weighted.
+
+<br>
+
+All the pre-processed files above are used as inputs for `PureCN.R` to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.
+
+```{r eval=FALSE}
+Rscript $PURECN/PureCN.R \
+    --out $PCN_OUT/PureCN/tumor_only/$SAMPLEID \
+    --tumor $PCN_OUT/tumor_cov/${SAMPLEID}_coverage_loess.txt \
+    --SAMPLEID ${SAMPLEID} \
+    --vcf $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect.vcf \
+    --statsfile $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect_stats.txt \
+    --normaldb $PCN_OUT/normalDB/normalDB_hg38.rds \
+    --normal_panel $PCN_OUT/normalDB/mapping_bias_hg38.rds \
+    --intervals $INPUT/bed/baits_hg38_intervals.txt \
+    --intervalweightfile $PCN_OUT/normalDB/interval_weights_hg38.txt \
+    --snpblacklist hg38_simpleRepeats.bed \
+    --genome hg38 \
+    --force --postoptimize --seed 123
+```
+
+<br>
+
+**Overview of CNV analysis workflow with intermediates**    
+Here is the more detailed workflow diagram with the intermediate files described above.
+```{r echo=FALSE, out.width = '180%'}
+knitr::include_graphics("overview_2.png")
+```
+
+<br>
+
+**Requirement for production pipeline**    
+As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. 
+```{r echo=FALSE, out.width = '180%'}
+knitr::include_graphics("overview_3.png")
+```
+
+### Analysis examples
+```{r example_output, echo=FALSE, warning=FALSE, message=FALSE}
+library(PureCN)
+file.rds = "Sample1_PureCN.rds"
+ret = readRDS(file.rds)
+```
+
+##### 1. Overview
+The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.
+```{r fig.width=4.5, fig.height=4.5}
+plotAbs(ret, type="overview")
+```
+
+##### 2. Log-ratio histogram
+This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of 'Overview' plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.
+```{r fig.width=4, fig.height=4}
+plotAbs(ret, 1, type="hist")
+```
+
+```{r}
+createCurationFile(file.rds)
+read.csv("Sample1_PureCN.csv")
+```
+
+##### 3. Amplification and deletion
+```{r}
+gene.calls = callAlterations(ret)
+head(gene.calls)
+```
+
+##### 4. Genomic regions with LOH
+```{r}
+loh = callLOH(ret)
+head(loh)
+```
+
+#### Example of TCGA-OV and TCGA-LUAD datasets
+**1. Purity and Ploidy**         
+**2. TMB (Tumor mutation burden)** : TMB is the number of somatic mutations carried by tumor cells.    
+**3. Mutational signatures** : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
+
+```{r analysis_example, echo=FALSE}
+knitr::include_graphics("analysis_example.png")
+```
