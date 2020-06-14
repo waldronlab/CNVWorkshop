@@ -274,7 +274,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <p>The rownames of the <code>sparseAssay</code> result are equal to the names of the <code>GRanges</code> elements. The values in the matrix returned by <code>sparseAssay</code> correspond to the first columns of the <code>mcols</code> of each <code>GRangesList</code> element, in this case the “score” column.</p>
-<p>Note, this is the default <code>assay()</code> method of <code>RaggedExperiment</code>:</p>
+<p>Note, this is the default <code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html">assay()</a></code> method of <code>RaggedExperiment</code>:</p>
 <div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu">assay</span>(<span class="no">ragexp</span>, <span class="st">"score"</span>)</pre></body></html></div>
 <pre><code>##   sample1 sample2
 ## A       3      NA
@@ -526,17 +526,17 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357   1014.82      5.83
-## NE001358   1028.22      6.05
-## NE001359   1132.89      5.86
-## NE001360   1211.85      9.18
-## NE001361   1081.68      2.89
+## NE001357   1085.49      6.73
+## NE001358    978.00      4.43
+## NE001359   1117.10      5.98
+## NE001360   1040.71      6.84
+## NE001361   1091.95      8.48
 ## ...            ...       ...
-## NE003962   1229.73      4.48
-## NE003963    983.44      9.00
-## NE003966    980.95      9.36
-## NE003967   1145.13      6.93
-## NE003968   1004.33      4.84</code></pre>
+## NE003962    989.71      5.89
+## NE003963    987.91      4.43
+## NE003966   1263.49      9.70
+## NE003967   1174.16      8.57
+## NE003968    957.31      7.04</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
@@ -619,12 +619,12 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
 <div class="sourceCode" id="cb56"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
 <span class="no">ah</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/RtmptPwZXX/BiocFileCache</code></pre>
-<pre><code>## snapshotDate(): 2020-05-23</code></pre>
+<pre><code>## using temporary cache /tmp/RtmpTZ6TDi/BiocFileCache</code></pre>
+<pre><code>## snapshotDate(): 2020-06-12</code></pre>
 <div class="sourceCode" id="cb59"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
 <pre><code>## AnnotationHub with 14 records
-## # snapshotDate(): 2020-05-23
+## # snapshotDate(): 2020-06-12
 ## # $dataprovider: Ensembl
 ## # $species: Bos taurus
 ## # $rdataclass: EnsDb
@@ -720,8 +720,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
-## P-value: 0.0297029702970297
-## Z-score: -2.1103
+## P-value: 0.0198019801980198
+## Z-score: -2.2207
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -732,10 +732,487 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## [1] "permTestResultsList"</code></pre>
 <div class="sourceCode" id="cb71"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    96.0   108.8   114.0   113.9   120.0   134.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 113.9 <span class="math inline">\(\pm\)</span> 8.</p>
+##    94.0   110.0   114.5   115.4   120.2   135.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.4 <span class="math inline">\(\pm\)</span> 8.3.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
 <p>Note: the function <code><a href="https://rdrr.io/pkg/regioneR/man/permTest.html">regioneR::permTest</a></code> allows to incorporate user-defined functions for randomizing regions and evaluating additional measures of overlap such as total genomic size in bp.</p>
+</div>
+<div id="cnv-expression-association-analysis" class="section level3">
+<h3 class="hasAnchor">
+<a href="#cnv-expression-association-analysis" class="anchor"></a>CNV-expression association analysis</h3>
+<p>Studies of expression quantitative trait loci (eQTLs) aim at the discovery of genetic variants that explain variation in gene expression levels (<a href="https://www.ncbi.nlm.nih.gov/pubmed/23650636">Nica and Dermitzakis, 2013</a>). Mainly applied in the context of SNPs, the concept also naturally extends to the analysis of CNVs.</p>
+<p>The <code>CNVRanger</code> package implements association testing between CNV regions and RNA-seq read counts using <code>edgeR</code>, which applies generalized linear models based on the negative-binomial distribution while incorporating normalization factors for different library sizes.</p>
+<p>In the case of only one CN state deviating from 2n for a CNV region under investigation, this reduces to the classical 2-group comparison. For more than two states (e.g. 0n, 1n, 2n), edgeR’s ANOVA-like test is applied to test all deviating groups for significant expression differences relative to 2n.</p>
+<div id="working-with-individual-cnv-and-rna-seq-assays" class="section level4">
+<h4 class="hasAnchor">
+<a href="#working-with-individual-cnv-and-rna-seq-assays" class="anchor"></a>Working with individual CNV and RNA-seq assays</h4>
+<p>We demonstrate the functionality by loading RNA-seq read count data from skeletal muscle samples for 183 Nelore cattle steers, which we analyzed for CNV-expression effects as previously described (<a href="https://doi.org/10.1038/s41598-018-19782-4">Geistlinger et al., 2018</a>).</p>
+<div class="sourceCode" id="cb73"><html><body><pre class="r"><span class="no">rseq.file</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">data.dir</span>, <span class="st">"counts_cleaned.txt"</span>)
+<span class="no">rcounts</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.delim</a></span>(<span class="no">rseq.file</span>, <span class="kw">row.names</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">stringsAsFactors</span><span class="kw">=</span><span class="fl">FALSE</span>)
+<span class="no">rcounts</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">rcounts</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">rcounts</span>)</pre></body></html></div>
+<pre><code>## [1] 939 183</code></pre>
+<div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="no">rcounts</span>[<span class="fl">1</span>:<span class="fl">5</span>, <span class="fl">1</span>:<span class="fl">5</span>]</pre></body></html></div>
+<pre><code>##                    NE001407 NE001408 NE001424 NE001439 NE001448
+## ENSBTAG00000000088       64       65      233      135      134
+## ENSBTAG00000000160       20       28       50       13       18
+## ENSBTAG00000000176      279      373      679      223      417
+## ENSBTAG00000000201      252      271      544      155      334
+## ENSBTAG00000000210      268      379      486      172      443</code></pre>
+<p>For demonstration, we restrict analysis to the 939 genes on chromosome 1 and 2, and store the RNA-seq expression data in a <code>SummarizedExperiment</code>.</p>
+<div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">SummarizedExperiment</span>)
+<span class="no">rse</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">SummarizedExperiment</a></span>(<span class="kw">assays</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">rcounts</span><span class="kw">=</span><span class="no">rcounts</span>),
+                <span class="kw">rowRanges</span><span class="kw">=</span><span class="fu">granges</span>(<span class="no">sel.genes</span>)[<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(<span class="no">rcounts</span>)])
+<span class="no">rse</span></pre></body></html></div>
+<pre><code>## class: RangedSummarizedExperiment 
+## dim: 939 183 
+## metadata(0):
+## assays(1): rcounts
+## rownames(939): ENSBTAG00000000088 ENSBTAG00000000160 ...
+##   ENSBTAG00000048210 ENSBTAG00000048228
+## rowData names(0):
+## colnames(183): NE001407 NE001408 ... NE003840 NE003843
+## colData names(0):</code></pre>
+<p>Assuming distinct modes of action, effects observed in the CNV-expression analysis are typically divided into (i) local effects (<em>cis</em>), where expression changes coincide with CNVs in the respective genes, and (ii) distal effects (<em>trans</em>), where CNVs supposedly affect trans-acting regulators such as transcription factors.</p>
+<p>However, due to power considerations and to avoid detection of spurious effects, stringent filtering of (i) not sufficiently expressed genes, and (ii) CNV regions with insufficient sample size in groups deviating from 2n, should be carried out when testing for distal effects. Local effects have a clear spatial indication and the number of genes locating in or close to a CNV region of interest is typically small; testing for differential expression between CN states is thus generally better powered for local effects and less stringent filter criteria can be applied.</p>
+<p>In the following, we carry out CNV-expression association analysis by providing the CNV regions to test (<code>cnvrs</code>), the individual CNV calls (<code>grl</code>) to determine per-sample CN state in each CNV region, the RNA-seq read counts (<code>rse</code>), and the size of the genomic window around each CNV region (<code>window</code>). The <code>window</code> argument thereby determines which genes are considered for testing for each CNV region and is set here to 1 Mbp.</p>
+<p>Further, use the <code>min.cpm</code> and <code>min.samples</code> arguments to exclude from the analysis (i) genes with fewer than <code>min.cpm</code> reads per million reads mapped (cpm, counts per million), and (ii) CNV regions with fewer than <code>min.samples</code> samples in a group deviating from 2n.</p>
+<div class="sourceCode" id="cb79"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="no">cnvrs</span>, <span class="no">grl</span>, <span class="no">rse</span>, <span class="kw">window</span><span class="kw">=</span><span class="st">"1Mbp"</span>, <span class="kw">verbose</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+<pre><code>## Restricting analysis to 179 intersecting samples</code></pre>
+<pre><code>## Preprocessing RNA-seq data ...</code></pre>
+<pre><code>## Summarizing per-sample CN state in each CNV region</code></pre>
+<pre><code>## Excluding 286 cnvrs not satisfying min.samples threshold</code></pre>
+<pre><code>## Analyzing 12 regions with &gt;=1 gene in the given window</code></pre>
+<pre><code>## 1 of 12</code></pre>
+<pre><code>## 2 of 12</code></pre>
+<pre><code>## 3 of 12</code></pre>
+<pre><code>## 4 of 12</code></pre>
+<pre><code>## 5 of 12</code></pre>
+<pre><code>## 6 of 12</code></pre>
+<pre><code>## 7 of 12</code></pre>
+<pre><code>## 8 of 12</code></pre>
+<pre><code>## 9 of 12</code></pre>
+<pre><code>## 10 of 12</code></pre>
+<pre><code>## 11 of 12</code></pre>
+<pre><code>## 12 of 12</code></pre>
+<div class="sourceCode" id="cb97"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
+<pre><code>## GRangesList object of length 12:
+## $`chr1:16947-111645`
+## GRanges object with 5 ranges and 5 metadata columns:
+##                      seqnames         ranges strand | logFC.CN0 logFC.CN1
+##                         &lt;Rle&gt;      &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt;
+##   ENSBTAG00000018278     chr1  922635-929992      + |        NA        NA
+##   ENSBTAG00000021997     chr1 944294-1188287      - |        NA        NA
+##   ENSBTAG00000020035     chr1  351708-362907      + |        NA        NA
+##   ENSBTAG00000011528     chr1  463572-478996      - |        NA        NA
+##   ENSBTAG00000012594     chr1  669920-733729      - |        NA        NA
+##                        logFC.CN3     PValue AdjPValue
+##                        &lt;numeric&gt;  &lt;numeric&gt; &lt;numeric&gt;
+##   ENSBTAG00000018278  0.19485971 0.00731515  0.400665
+##   ENSBTAG00000021997 -0.08124960 0.17961602  0.841565
+##   ENSBTAG00000020035  0.07450286 0.74032511  0.997719
+##   ENSBTAG00000011528  0.01183926 0.91556541  0.997719
+##   ENSBTAG00000012594 -0.00661189 0.94305715  0.997719
+##   -------
+##   seqinfo: 48 sequences from UMD3.1 genome
+## 
+## ...
+## &lt;11 more elements&gt;</code></pre>
+<p>The resulting <code>DataFrame</code> contains in the first column the CNV regions tested. The second column contains the genes tested in the genomic window around each CNV region, and the other columns report (i) log2 fold change with respect to the 2n group, (ii) edgeR’s DE <em>p</em>-value, and (iii) the (per default) Benjamini-Hochberg adjusted <em>p</em>-value.</p>
+</div>
+<div id="working-with-tcga-data-stored-in-a-multiassayexperiment" class="section level4">
+<h4 class="hasAnchor">
+<a href="#working-with-tcga-data-stored-in-a-multiassayexperiment" class="anchor"></a>Working with TCGA data stored in a <code>MultiAssayExperiment</code>
+</h4>
+<p>In the previous section, we individually prepared the CNV and RNA-seq data for CNV-expression association analysis. In the following, we demonstrate how to perform an integrated preparation of the two assays when stored in a <a href="http://bioconductor.org/packages/MultiAssayExperiment">MultiAssayExperiment</a> We therefore consider glioblastoma <a href="https://cancergenome.nih.gov/cancersselected/glioblastomamultiforme">GBM</a> data from The Cancer Genome Atlas <a href="https://cancergenome.nih.gov">TCGA</a>, which can conveniently be accessed with the <a href="http://bioconductor.org/packages/curatedTCGAData">curatedTCGAData</a> package.</p>
+<div class="sourceCode" id="cb99"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">curatedTCGAData</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressMessages</a></span>(
+    <span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedTCGAData/man/curatedTCGAData.html">curatedTCGAData</a></span>(<span class="st">"GBM"</span>,
+        <span class="kw">assays</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"GISTIC_Peaks"</span>, <span class="st">"CNVSNP"</span>, <span class="st">"RNASeq2GeneNorm"</span>),
+        <span class="kw">dry.run</span><span class="kw">=</span><span class="fl">FALSE</span>)
+)
+<span class="no">gbm</span></pre></body></html></div>
+<pre><code>## A MultiAssayExperiment object of 3 listed
+##  experiments with user-defined names and respective classes.
+##  Containing an ExperimentList class object of length 3:
+##  [1] GBM_CNVSNP-20160128: RaggedExperiment with 146852 rows and 1104 columns
+##  [2] GBM_RNASeq2GeneNorm-20160128: SummarizedExperiment with 20501 rows and 166 columns
+##  [3] GBM_GISTIC_Peaks-20160128: RangedSummarizedExperiment with 68 rows and 577 columns
+## Functionality:
+##  experiments() - obtain the ExperimentList instance
+##  colData() - the primary/phenotype DataFrame
+##  sampleMap() - the sample coordination DataFrame
+##  `$`, `[`, `[[` - extract colData columns, subset, or experiment
+##  *Format() - convert into a long or wide DataFrame
+##  assays() - convert ExperimentList to a SimpleList of matrices
+##  exportClass() - save all data to files</code></pre>
+<p>The returned <code>MultiAssayExperiment</code> contains three assays:</p>
+<ul>
+<li>the SNP-based CNV calls stored in a <code>RaggedExperiment</code> (<code>GBM_CNVSNP</code>),</li>
+<li>the recurrent CNV regions summarized across the population using the <a href="http://www.broadinstitute.org/cancer/cga/gistic">GISTIC</a> method (<code>GBM_GISTIC_Peaks</code>), and</li>
+<li>the normalized RNA-seq gene expression values in a <code>SummarizedExperiment</code> (<code>GBM_RNASeq2GeneNorm</code>).</li>
+</ul>
+<p>To annotate the genomic coordinates of the genes measured in the RNA-seq assay, we use the function <code>symbolsToRanges</code> from the <a href="http://bioconductor.org/packages/TCGAutils">TCGAutils</a> package. For demonstration, we restrict the analysis to chromosome 1 and 2.</p>
+<div class="sourceCode" id="cb101"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">TCGAutils</span>)
+<span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressMessages</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/simplifyTCGA.html">symbolsToRanges</a></span>(<span class="no">gbm</span>, <span class="kw">unmapped</span><span class="kw">=</span><span class="fl">FALSE</span>))
+<span class="kw">for</span>(<span class="no">i</span> <span class="kw">in</span> <span class="fl">1</span>:<span class="fl">3</span>)
+{
+    <span class="fu">genome</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]])) <span class="kw">&lt;-</span> <span class="st">"hg19"</span>
+    <span class="fu">seqlevelsStyle</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]])) <span class="kw">&lt;-</span> <span class="st">"UCSC"</span>
+    <span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(<span class="fu">seqnames</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]]))) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)
+    <span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]] <span class="kw">&lt;-</span> <span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]][<span class="no">ind</span>,]
+}
+<span class="no">gbm</span></pre></body></html></div>
+<pre><code>## A MultiAssayExperiment object of 3 listed
+##  experiments with user-defined names and respective classes.
+##  Containing an ExperimentList class object of length 3:
+##  [1] GBM_CNVSNP-20160128: RaggedExperiment with 17818 rows and 1104 columns
+##  [2] GBM_GISTIC_Peaks-20160128: RangedSummarizedExperiment with 12 rows and 577 columns
+##  [3] GBM_RNASeq2GeneNorm-20160128_ranged: RangedSummarizedExperiment with 2914 rows and 166 columns
+## Functionality:
+##  experiments() - obtain the ExperimentList instance
+##  colData() - the primary/phenotype DataFrame
+##  sampleMap() - the sample coordination DataFrame
+##  `$`, `[`, `[[` - extract colData columns, subset, or experiment
+##  *Format() - convert into a long or wide DataFrame
+##  assays() - convert ExperimentList to a SimpleList of matrices
+##  exportClass() - save all data to files</code></pre>
+<p>We now restrict the analysis to intersecting patients of the three assays using <code>MultiAssayExperiment</code>’s <code>intersectColumns</code> function, and select <em>Primary Solid Tumor</em> samples using the <code>splitAssays</code> function from the <code>TCGAutils</code> package.</p>
+<div class="sourceCode" id="cb103"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu">intersectColumns</span>(<span class="no">gbm</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">sampleTables</a></span>(<span class="no">gbm</span>)</pre></body></html></div>
+<pre><code>## $`GBM_CNVSNP-20160128`
+## 
+##  01  02  10  11 
+## 154  13 146   1 
+## 
+## $`GBM_GISTIC_Peaks-20160128`
+## 
+##  01 
+## 154 
+## 
+## $`GBM_RNASeq2GeneNorm-20160128_ranged`
+## 
+##  01  02 
+## 147  13</code></pre>
+<div class="sourceCode" id="cb105"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">sampleTypes</span>)
+<span class="no">sampleTypes</span></pre></body></html></div>
+<pre><code>##    Code                                        Definition Short.Letter.Code
+## 1    01                               Primary Solid Tumor                TP
+## 2    02                             Recurrent Solid Tumor                TR
+## 3    03   Primary Blood Derived Cancer - Peripheral Blood                TB
+## 4    04      Recurrent Blood Derived Cancer - Bone Marrow              TRBM
+## 5    05                          Additional - New Primary               TAP
+## 6    06                                        Metastatic                TM
+## 7    07                             Additional Metastatic               TAM
+## 8    08                        Human Tumor Original Cells              THOC
+## 9    09        Primary Blood Derived Cancer - Bone Marrow               TBM
+## 10   10                              Blood Derived Normal                NB
+## 11   11                               Solid Tissue Normal                NT
+## 12   12                                Buccal Cell Normal               NBC
+## 13   13                           EBV Immortalized Normal              NEBV
+## 14   14                                Bone Marrow Normal               NBM
+## 15   15                                    sample type 15              15SH
+## 16   16                                    sample type 16              16SH
+## 17   20                                   Control Analyte             CELLC
+## 18   40 Recurrent Blood Derived Cancer - Peripheral Blood               TRB
+## 19   50                                        Cell Lines              CELL
+## 20   60                          Primary Xenograft Tissue                XP
+## 21   61                Cell Line Derived Xenograft Tissue               XCL
+## 22   99                                    sample type 99              99SH</code></pre>
+<div class="sourceCode" id="cb107"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">splitAssays</a></span>(<span class="no">gbm</span>, <span class="kw">sampleCodes</span><span class="kw">=</span><span class="st">"01"</span>)
+<span class="no">gbm</span></pre></body></html></div>
+<pre><code>## A MultiAssayExperiment object of 3 listed
+##  experiments with user-defined names and respective classes.
+##  Containing an ExperimentList class object of length 3:
+##  [1] 01_GBM_CNVSNP-20160128: RaggedExperiment with 17818 rows and 154 columns
+##  [2] 01_GBM_GISTIC_Peaks-20160128: RangedSummarizedExperiment with 12 rows and 154 columns
+##  [3] 01_GBM_RNASeq2GeneNorm-20160128_ranged: RangedSummarizedExperiment with 2914 rows and 147 columns
+## Functionality:
+##  experiments() - obtain the ExperimentList instance
+##  colData() - the primary/phenotype DataFrame
+##  sampleMap() - the sample coordination DataFrame
+##  `$`, `[`, `[[` - extract colData columns, subset, or experiment
+##  *Format() - convert into a long or wide DataFrame
+##  assays() - convert ExperimentList to a SimpleList of matrices
+##  exportClass() - save all data to files</code></pre>
+<p>We transform CN estimates into CN states where states are encoded as:</p>
+<ul>
+<li>
+<code>0</code>: homozygous deletion (2-copy loss)</li>
+<li>
+<code>1</code>: heterozygous deletion (1-copy loss)</li>
+<li>
+<code>2</code>: normal diploid state</li>
+<li>
+<code>3</code>: 1-copy gain</li>
+<li>
+<code>4</code>: amplification (&gt;= 2-copy gain)</li>
+</ul>
+<div class="sourceCode" id="cb109"><html><body><pre class="r"><span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span>(<span class="st">"CNVSNP"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">gbm</span>))
+<span class="no">state</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">Segment_Mean</span>)
+<span class="no">state</span>[<span class="no">state</span> <span class="kw">&gt;</span> <span class="fl">2</span>] <span class="kw">&lt;-</span> <span class="fl">2</span>
+<span class="no">state</span>[<span class="no">state</span> <span class="kw">&lt;</span> -<span class="fl">2</span>] <span class="kw">&lt;-</span> -<span class="fl">2</span>
+<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">State</span> <span class="kw">&lt;-</span> <span class="no">state</span> + <span class="fl">2</span>
+<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]]) <span class="kw">&lt;-</span> <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])[,<span class="fl">3</span>:<span class="fl">1</span>]
+<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span>(<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">State</span>)</pre></body></html></div>
+<pre><code>## 
+##     0     1     2     3     4 
+##  3270  3025 10223   856   444</code></pre>
+<p>The data is now ready for CNV-expression association analysis, where we find only two CNV regions with sufficient sample size for testing using the default value of 10 for the <code>minSamples</code> argument.</p>
+<div class="sourceCode" id="cb111"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="kw">cnvrs</span><span class="kw">=</span><span class="st">"01_GBM_GISTIC_Peaks-20160128"</span>,
+    <span class="kw">calls</span><span class="kw">=</span><span class="st">"01_GBM_CNVSNP-20160128"</span>,
+    <span class="kw">rcounts</span><span class="kw">=</span><span class="st">"01_GBM_RNASeq2GeneNorm-20160128_ranged"</span>,
+    <span class="kw">data</span><span class="kw">=</span><span class="no">gbm</span>, <span class="kw">window</span><span class="kw">=</span><span class="st">"1Mbp"</span>, <span class="kw">verbose</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+<pre><code>## harmonizing input:
+##   removing 154 sampleMap rows not in names(experiments)</code></pre>
+<pre><code>## Preprocessing RNA-seq data ...</code></pre>
+<pre><code>## Summarizing per-sample CN state in each CNV region</code></pre>
+<pre><code>## Excluding 10 cnvrs not satisfying min.samples threshold</code></pre>
+<pre><code>## Analyzing 2 regions with &gt;=1 gene in the given window</code></pre>
+<pre><code>## 1 of 2</code></pre>
+<pre><code>## 2 of 2</code></pre>
+<div class="sourceCode" id="cb119"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
+<pre><code>## GRangesList object of length 2:
+## $`chr1:3394251-6475685`
+## GRanges object with 29 ranges and 3 metadata columns:
+##            seqnames          ranges strand | logFC.CN1      PValue   AdjPValue
+##               &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;
+##      RPL22     chr1 6245080-6259679      - | -0.717579 1.09084e-08 2.12713e-07
+##     CAMTA1     chr1 6845384-7829766      + | -0.704416 3.49781e-07 3.73848e-06
+##    DNAJC11     chr1 6694228-6761966      - | -0.631034 5.65001e-06 3.17118e-05
+##     KLHL21     chr1 6650779-6662929      - | -0.800432 5.69187e-06 3.17118e-05
+##      PHF13     chr1 6673756-6684093      + | -0.635552 1.19554e-05 5.70943e-05
+##        ...      ...             ...    ... .       ...         ...         ...
+##       CHD5     chr1 6161847-6240194      - | -0.660360    0.308182    0.343403
+##     PRDM16     chr1 2985742-3355185      + | -0.312048    0.433294    0.465585
+##       HES5     chr1 2460184-2461684      - |  0.410797    0.441709    0.465585
+##   TNFRSF14     chr1 2487805-2495267      + |  0.134852    0.531166    0.545144
+##   TNFRSF25     chr1 6521214-6526255      - | -0.156011    0.626617    0.626617
+##   -------
+##   seqinfo: 25 sequences (1 circular) from hg19 genome
+## 
+## $`chr1:7908902-8336254`
+## GRanges object with 10 ranges and 3 metadata columns:
+##           seqnames          ranges strand | logFC.CN1      PValue   AdjPValue
+##              &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;
+##      RERE     chr1 8412464-8877699      - | -0.751926 2.70745e-09 1.05590e-07
+##     PARK7     chr1 8021714-8045342      + | -0.603130 3.83434e-07 3.73848e-06
+##    CAMTA1     chr1 6845384-7829766      + | -0.534687 4.94578e-07 3.85771e-06
+##   SLC45A1     chr1 8384390-8404227      + | -0.620425 1.31756e-05 5.70943e-05
+##      ENO1     chr1 8921059-8939151      - | -0.508063 1.41564e-04 4.24692e-04
+##     VAMP3     chr1 7831329-7841492      + | -0.372233 2.27742e-03 5.22466e-03
+##      H6PD     chr1 9294863-9331394      + | -0.479680 4.71034e-03 9.18517e-03
+##      PER3     chr1 7844380-7905237      + | -0.493125 2.85644e-02 4.64172e-02
+##    ERRFI1     chr1 8071779-8086393      - | -0.487835 5.78620e-02 8.35784e-02
+##    SLC2A5     chr1 9097005-9148510      - | -0.429257 7.59192e-02 1.02098e-01
+##   -------
+##   seqinfo: 25 sequences (1 circular) from hg19 genome</code></pre>
+</div>
+</div>
+</div>
+<div id="allele-specific-cnv-analysis-with-purecn" class="section level2">
+<h2 class="hasAnchor">
+<a href="#allele-specific-cnv-analysis-with-purecn" class="anchor"></a>Allele-specific CNV analysis with PureCN</h2>
+<p>For allele-specific copy number alteration (CNA) analysis, most commonly used tools in the field rely on high quality genome-wide data with matched normal profiles, limiting their applicability in clinical settings.</p>
+<p>Here, we’re introducing the open-source <a href="http://bioconductor.org/packages/PureCN">PureCN</a> R/Bioconductor package in conjunction with widely used variant-calling and copy number segmentation algorithms, for allele-specific CNA analysis from whole exome sequencing (WES) <em><strong>without matched normals</strong></em>.</p>
+<p>Further information on PureCN and its CNV analysis workflow can be found in the <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf">PureCN vignette</a>, <a href="https://doi.org/10.1186/s13029-016-0060-z">PureCN paper</a>, and <a href="https://www.biorxiv.org/content/10.1101/552711v1">CNV analysis workflow paper</a>.</p>
+<div id="overview-of-the-workflow" class="section level3">
+<h3 class="hasAnchor">
+<a href="#overview-of-the-workflow" class="anchor"></a>Overview of the workflow</h3>
+<p>Detailed scripts are available in this <a href="https://github.com/shbrief/CNVWorkflow_Code">GitHub repo</a>.</p>
+<div id="prepare-input-files-using-purecn-and-mutect" class="section level4">
+<h4 class="hasAnchor">
+<a href="#prepare-input-files-using-purecn-and-mutect" class="anchor"></a>Prepare input files using PureCN and MuTect</h4>
+<p>PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.</p>
+<div id="bed-file" class="section level5">
+<h5 class="hasAnchor">
+<a href="#bed-file" class="anchor"></a>1. BED file</h5>
+<p>we are analyzing WES data, so we need to know which part of the genome is captured through BED file.</p>
+</div>
+<div id="process-matched-normal-bam-files" class="section level5">
+<h5 class="hasAnchor">
+<a href="#process-matched-normal-bam-files" class="anchor"></a>2. <em><strong>Process-matched</strong></em> normal BAM files</h5>
+<p>these allow us to find out what kinds of backgrounds are there, especially technical biases.</p>
+</div>
+<div id="tumor-bam-files" class="section level5">
+<h5 class="hasAnchor">
+<a href="#tumor-bam-files" class="anchor"></a>3. Tumor BAM files</h5>
+<p>these contain the genetic changes, both germline and somatic alternations.<br><br></p>
+<p><img src="overview_1.png" width="100%"></p>
+<p><br></p>
+</div>
+</div>
+<div id="five-intermediate-files" class="section level4">
+<h4 class="hasAnchor">
+<a href="#five-intermediate-files" class="anchor"></a>Five intermediate files</h4>
+<p>Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with <code>PureCN.R</code> command line tool.</p>
+<div id="interval-file" class="section level5">
+<h5 class="hasAnchor">
+<a href="#interval-file" class="anchor"></a>1. Interval file</h5>
+<p>IntervalFile.R command line tool optimize the targets for copy number calling, for example,</p>
+<ul>
+<li>large targets are split to obtain higher resolution<br>
+</li>
+<li>targets in regions of low mappability are dropped</li>
+</ul>
+<p>One thing you should be careful is to make sure that the genome version of target file matches the reference.</p>
+</div>
+</div>
+<div id="vcf-and-stats-files" class="section level4">
+<h4 class="hasAnchor">
+<a href="#vcf-and-stats-files" class="anchor"></a>2. VCF and stats files</h4>
+<div class="sourceCode" id="cb121"><html><body><pre class="r">java -jar mutect.jar \
+    --analysis_type MuTect \
+    -R hg38.fasta \
+    --dbsnp $DBSNP_VCF \
+    --cosmic $COSMIC_VCF \
+    -I:tumor $BAM_TUMOR  \
+    -o $OUT/${SAMPLEID}_mutect_stats.txt \
+    -vcf $OUT/${SAMPLEID}_mutect.vcf</pre></body></html></div>
+<p>Output VCF files contain both germline SNPs and somatic mutations, which have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. <code>call_stats.txt</code> file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.</p>
+</div>
+<div id="pool-of-normals-pon" class="section level4">
+<h4 class="hasAnchor">
+<a href="#pool-of-normals-pon" class="anchor"></a>3. Pool of normals (PoN)</h4>
+<p>For this workflow, MuTect is run on <code>--artifact-detection-mode</code>,</p>
+<ul>
+<li>which is used when running the caller on a normal (as if it were a tumor) to detect artifacts</li>
+<li>which includes variant calls that are clearly germline</li>
+<li>which is commonly used for Panel-Of-Normals creation</li>
+</ul>
+<div class="sourceCode" id="cb122"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb122-1"><a href="#cb122-1"></a><span class="ex">java</span> -jar mutect.jar \</span>
+<span id="cb122-2"><a href="#cb122-2"></a>   --analysis_type MuTect \</span>
+<span id="cb122-3"><a href="#cb122-3"></a>   -R hg38.fasta \</span>
+<span id="cb122-4"><a href="#cb122-4"></a>   --artifact_detection_mode \</span>
+<span id="cb122-5"><a href="#cb122-5"></a>   --dbsnp <span class="va">$DBSNP_VCF</span> \</span>
+<span id="cb122-6"><a href="#cb122-6"></a>   --cosmic <span class="va">$COSMIC_VCF</span> \</span>
+<span id="cb122-7"><a href="#cb122-7"></a>   -dt None \</span>
+<span id="cb122-8"><a href="#cb122-8"></a>   -I:tumor <span class="va">$BAM_NORMAL</span>  \</span>
+<span id="cb122-9"><a href="#cb122-9"></a>   -o <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon_stats.txt \</span>
+<span id="cb122-10"><a href="#cb122-10"></a>   -vcf <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon.vcf</span></code></pre></div>
+<p>Depending on the type of variant you’re looking for, the PON will be generated differently. What all PONs have in common is that,</p>
+<ul>
+<li>they are made from normal samples (in this context, “normal” means derived from healthy tissue that is believed to not have any somatic alterations) and</li>
+<li>their main purpose is to capture recurrent technical artifacts in order to improve the results of the variant calling analysis.</li>
+</ul>
+<div id="gc-normalized-coverage-files" class="section level5">
+<h5 class="hasAnchor">
+<a href="#gc-normalized-coverage-files" class="anchor"></a>4. GC-normalized coverage files</h5>
+<p><code>Coverage.R</code> process tumor and normal bam files to calculate GC-normalized coverages. Different library can give different coverage profiles, and the most important library-specific bias is due to GC-content. i.e. regions of high AT- or GC-content are not always captured with exactly the same efficiency in tumor and normals.</p>
+</div>
+<div id="normaldb" class="section level5">
+<h5 class="hasAnchor">
+<a href="#normaldb" class="anchor"></a>5. NormalDB</h5>
+<p>To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).</p>
+<p>Three outputs from this process are used for PureCN,</p>
+<ul>
+<li>a database of normal samples, which will be used to normalize tumor coverages,<br>
+</li>
+<li>mapping bias information of each variant. By examining the coverage of particular intervals in a pool of normals, we can estimate how well this assay captures these intervals and will then adjust the tumor coverage accordingly.<br>
+</li>
+<li>Last is an interval weight file. Interval weights will be set proportional to the inverse of coverage standard deviation across all normals. Intervals with high variance in coverage in the pool of normals are thus down-weighted.</li>
+</ul>
+<p><br></p>
+<p>All the pre-processed files above are used as inputs for <code>PureCN.R</code> to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.</p>
+<div class="sourceCode" id="cb123"><html><body><pre class="r">Rscript $PURECN/PureCN.R \
+    --out $PCN_OUT/PureCN/tumor_only/$SAMPLEID \
+    --tumor $PCN_OUT/tumor_cov/${SAMPLEID}_coverage_loess.txt \
+    --SAMPLEID ${SAMPLEID} \
+    --vcf $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect.vcf \
+    --statsfile $MUTECT_OUT/stat_tumor_only/${SAMPLEID}_mutect_stats.txt \
+    --normaldb $PCN_OUT/normalDB/normalDB_hg38.rds \
+    --normal_panel $PCN_OUT/normalDB/mapping_bias_hg38.rds \
+    --intervals $INPUT/bed/baits_hg38_intervals.txt \
+    --intervalweightfile $PCN_OUT/normalDB/interval_weights_hg38.txt \
+    --snpblacklist hg38_simpleRepeats.bed \
+    --genome hg38 \
+    --force --postoptimize --seed 123</pre></body></html></div>
+<p><br></p>
+<p><strong>Overview of CNV analysis workflow with intermediates</strong><br>
+Here is the more detailed workflow diagram with the intermediate files described above. <img src="overview_2.png" width="180%"></p>
+<p><br></p>
+<p><strong>Requirement for production pipeline</strong><br>
+As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. <img src="overview_3.png" width="180%"></p>
+</div>
+</div>
+</div>
+<div id="analysis-examples" class="section level3">
+<h3 class="hasAnchor">
+<a href="#analysis-examples" class="anchor"></a>Analysis examples</h3>
+<div id="overview-1" class="section level5">
+<h5 class="hasAnchor">
+<a href="#overview-1" class="anchor"></a>1. Overview</h5>
+<p>The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.</p>
+<div class="sourceCode" id="cb124"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"overview"</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-26-1.png" width="100%"></p>
+</div>
+<div id="log-ratio-histogram" class="section level5">
+<h5 class="hasAnchor">
+<a href="#log-ratio-histogram" class="anchor"></a>2. Log-ratio histogram</h5>
+<p>This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of ‘Overview’ plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.</p>
+<div class="sourceCode" id="cb125"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="fl">1</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"hist"</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-27-1.png" width="100%"></p>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode" id="cb127"><html><body><pre class="r"><span class="fu">createCurationFile</span>(<span class="no">file.rds</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="st">"Sample1_PureCN.csv"</span>)</pre></body></html></div>
+<pre><code>##   Sampleid Purity   Ploidy Sex Contamination Flagged Failed Curated
+## 1  Sample1   0.65 1.734572   ?             0    TRUE  FALSE   FALSE
+##                          Comment
+## 1 EXCESSIVE LOSSES;EXCESSIVE LOH</code></pre>
+</div>
+<div id="amplification-and-deletion" class="section level5">
+<h5 class="hasAnchor">
+<a href="#amplification-and-deletion" class="anchor"></a>3. Amplification and deletion</h5>
+<div class="sourceCode" id="cb129"><html><body><pre class="r"><span class="no">gene.calls</span> <span class="kw">=</span> <span class="fu">callAlterations</span>(<span class="no">ret</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">gene.calls</span>)</pre></body></html></div>
+<pre><code>##            chr     start       end C seg.mean seg.id number.targets  gene.mean
+## EIF2A     chr3 150270143 150301699 6   1.3351      5             13  1.5159387
+## MIR548H2  chr3 151531951 151538241 6   1.3351      5              3  0.8261594
+## GPNMB     chr7  23286477  23313844 7   1.4723     17             11  1.4490939
+## SH2D4B   chr10  82298088  82403838 0  -1.5118     22              8 -1.5141982
+## SLC35G1  chr10  95653791  95661248 0  -1.3002     24              3 -1.5988526
+## CYP2C9   chr10  96698440  96748786 0  -1.3002     24              9 -1.1901085
+##            gene.min   gene.max focal breakpoints          type num.snps  M
+## EIF2A     0.7544062  2.1392167  TRUE           0 AMPLIFICATION        0 NA
+## MIR548H2  0.4682628  1.2000253  TRUE           0 AMPLIFICATION        0 NA
+## GPNMB     0.9397072  1.8200775  TRUE           0 AMPLIFICATION        0 NA
+## SH2D4B   -1.9281007 -1.2607230 FALSE           0      DELETION        2  0
+## SLC35G1  -1.8066816 -1.4493561 FALSE           0      DELETION        0 NA
+## CYP2C9   -2.1922992 -0.9875222 FALSE           0      DELETION        0 NA
+##          M.flagged  loh
+## EIF2A           NA   NA
+## MIR548H2        NA   NA
+## GPNMB           NA   NA
+## SH2D4B        TRUE TRUE
+## SLC35G1         NA   NA
+## CYP2C9          NA   NA</code></pre>
+</div>
+<div id="genomic-regions-with-loh" class="section level5">
+<h5 class="hasAnchor">
+<a href="#genomic-regions-with-loh" class="anchor"></a>4. Genomic regions with LOH</h5>
+<div class="sourceCode" id="cb131"><html><body><pre class="r"><span class="no">loh</span> <span class="kw">=</span> <span class="fu">callLOH</span>(<span class="no">ret</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">loh</span>)</pre></body></html></div>
+<pre><code>##    chr     start       end arm C M                       type   seg.mean
+## 1 chr1 114515871 121535434   p 2 0 WHOLE ARM COPY-NEUTRAL LOH  0.1209814
+## 2 chr1 124535434 248085104   q 2 0 WHOLE ARM COPY-NEUTRAL LOH  0.1209814
+## 3 chr2  10262881  92326171   p 1 0              WHOLE ARM LOH -0.4656416
+## 4 chr2  95326171 231775678   q 1 0              WHOLE ARM LOH -0.4656416
+## 5 chr2 236403331 239039169   q 2 0           COPY-NEUTRAL LOH  0.0193000
+## 6 chr3  11888043  90504854   p 2 1                             0.1052000
+##   num.mark num.snps M.flagged maf.expected maf.observed
+## 1      902       13     FALSE    0.1750000    0.1756325
+## 2      902       13     FALSE    0.1750000    0.1756325
+## 3      685       13     FALSE    0.2592593    0.2788990
+## 4      685       13     FALSE    0.2592593    0.2788990
+## 5       88        2      TRUE    0.1750000    0.1736667
+## 6      408        1      TRUE    0.5000000    0.4712710</code></pre>
+</div>
+<div id="example-of-tcga-ov-and-tcga-luad-datasets" class="section level4">
+<h4 class="hasAnchor">
+<a href="#example-of-tcga-ov-and-tcga-luad-datasets" class="anchor"></a>Example of TCGA-OV and TCGA-LUAD datasets</h4>
+<p><strong>1. Purity and Ploidy</strong><br><strong>2. TMB (Tumor mutation burden)</strong> : TMB is the number of somatic mutations carried by tumor cells.<br><strong>3. Mutational signatures</strong> : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.</p>
+<p><img src="analysis_example.png" width="100%"></p>
+</div>
 </div>
 </div>
 </div>
