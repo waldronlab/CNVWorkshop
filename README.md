@@ -1,4 +1,10 @@
+![](https://github.com/waldronlab/CNVWorkshop/workflows/.github/workflows/basic_checks.yaml/badge.svg)
+
 # Copy number variation analysis with Bioconductor
+
+[Workshop website](https://waldronlab.github.io/CNVWorkshop)
+
+[Docker image](https://hub.docker.com/repository/docker/ludwigg/cnvworkshop)
 
 # Instructor(s) name(s) and contact information
 
