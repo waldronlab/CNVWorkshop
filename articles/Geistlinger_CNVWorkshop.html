@@ -526,17 +526,17 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357   1085.49      6.73
-## NE001358    978.00      4.43
-## NE001359   1117.10      5.98
-## NE001360   1040.71      6.84
-## NE001361   1091.95      8.48
+## NE001357   1279.50      6.62
+## NE001358   1098.56      6.59
+## NE001359    965.20      4.82
+## NE001360   1042.99      7.41
+## NE001361   1106.43      6.12
 ## ...            ...       ...
-## NE003962    989.71      5.89
-## NE003963    987.91      4.43
-## NE003966   1263.49      9.70
-## NE003967   1174.16      8.57
-## NE003968    957.31      7.04</code></pre>
+## NE003962   1151.29      8.34
+## NE003963   1228.00      5.40
+## NE003966   1154.21      7.15
+## NE003967   1167.56      7.47
+## NE003968    896.73      5.47</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
@@ -619,12 +619,12 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
 <div class="sourceCode" id="cb56"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
 <span class="no">ah</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/RtmpTZ6TDi/BiocFileCache</code></pre>
-<pre><code>## snapshotDate(): 2020-06-12</code></pre>
+<pre><code>## using temporary cache /tmp/RtmpJWUKSP/BiocFileCache</code></pre>
+<pre><code>## snapshotDate(): 2020-06-18</code></pre>
 <div class="sourceCode" id="cb59"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
 <pre><code>## AnnotationHub with 14 records
-## # snapshotDate(): 2020-06-12
+## # snapshotDate(): 2020-06-18
 ## # $dataprovider: Ensembl
 ## # $species: Bos taurus
 ## # $rdataclass: EnsDb
@@ -720,8 +720,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
-## P-value: 0.0198019801980198
-## Z-score: -2.2207
+## P-value: 0.0495049504950495
+## Z-score: -1.8582
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -732,8 +732,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## [1] "permTestResultsList"</code></pre>
 <div class="sourceCode" id="cb71"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    94.0   110.0   114.5   115.4   120.2   135.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.4 <span class="math inline">\(\pm\)</span> 8.3.</p>
+##    93.0   108.0   115.0   114.5   121.0   136.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 114.5 <span class="math inline">\(\pm\)</span> 9.4.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
 <p>Note: the function <code><a href="https://rdrr.io/pkg/regioneR/man/permTest.html">regioneR::permTest</a></code> allows to incorporate user-defined functions for randomizing regions and evaluating additional measures of overlap such as total genomic size in bp.</p>
 </div>
