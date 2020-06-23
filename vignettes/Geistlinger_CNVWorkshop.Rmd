@@ -132,6 +132,24 @@ to a reference.
 Such regions are denoted as _CNV calls_ in the following and will be considered
 the starting point for analysis.
 
+Relevant literature:
+
+da Silva V, Ramos M, Groenen M, Crooijmans R, Johansson A, Regitano L, Coutinho L,
+Zimmer R, Waldron L, Geistlinger L.
+[CNVRanger: association analysis of CNVs with gene expression and quantitative phenotypes](https://doi.org/10.1093/bioinformatics/btz632).
+_Bioinformatics_, 36(3):972-3, 2020.
+
+Oh S, Geistlinger L, Ramos M, Morgan M, Waldron L, Riester M.
+[Reliable analysis of clinical tumor-only whole-exome sequencing data](https://doi.org/10.1200/CCI.19.00130).
+_JCO Clin Cancer Inform_, 4:321-35, 2020.
+
+Geistlinger L, Oh S, Ramos M, Schiffer L, LaRue R, Henzler C, Munro S, Daughters C,
+Nelson A, Winterhoff B, Chang Z, Talukdar S, Shetty M, Mullaney S, Morgan M,
+Parmigiani G, Birrer M, Qin LX, Riester M, Starr T, Waldron L.
+[Multi-omic analysis of subtype evolution and heterogeneity in high-grade serous ovarian carcinoma](https://doi.org/10.1101/554394).
+_bioRxiv_, 2020.
+
+
 ## Representation and manipulation of CNV data with RaggedExperiment
 
 `RaggedExperiment` is a flexible data representation for segmented copy number,
