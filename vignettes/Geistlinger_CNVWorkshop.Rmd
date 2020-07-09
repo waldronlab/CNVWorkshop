@@ -329,7 +329,7 @@ These methods all have corresponding methods to return a `RangedSummarizedExperi
 sparseSummarizedExperiment(ragexp)
 compactSummarizedExperiment(ragexp)
 disjoinSummarizedExperiment(ragexp, simplify = mean)
-qreduceSummarizedExperiment(ragexp, query=query, simplify=weightedmean)
+qreduceSummarizedExperiment(ragexp, query = query, simplify = weightedmean)
 ```
 
 Please see the `RaggedExperiment` vignette for
@@ -379,6 +379,11 @@ described, and applied in several previous studies:
 
 ### Reading and accessing CNV data
 
+```{r input, echo=FALSE, fig.wide=TRUE}
+vign.dir <- system.file("vignettes", package = "CNVRanger")
+knitr::include_graphics(file.path(vign.dir, "Input.png"))
+```
+
 `CNVRanger` uses Bioconductor core data structures 
 implemented in the [GenomicRanges](http://bioconductor.org/packages/GenomicRanges) 
 and [RaggedExperiment](http://bioconductor.org/packages/RaggedExperiment) 
@@ -392,6 +397,10 @@ library(CNVRanger)
 
 #### Input data format
 
+`r Biocpkg("CNVRanger")` reads CNV calls from a simple file format, providing at 
+least chromosome, start position, end position, sample ID, and integer copy number 
+for each call.
+
 For demonstration, we consider CNV calls as obtained with 
 [PennCNV](http://penncnv.openbioinformatics.org) from SNP-chip data in a 
 Brazilian cattle breed 
@@ -399,6 +408,9 @@ Brazilian cattle breed
 
 Here, we use a data subset and only consider CNV calls on chromosome 1 and 2,
 for which there are roughly 3000 CNV calls as obtained for 711 samples. 
+We use `read.csv` to read comma-separated values, but we could use a different
+function if the data were provided with a different delimiter
+(for example, `read.delim` for tab-separated values).
 
 ```{r readCalls}
 data.dir <- system.file("extdata", package="CNVRanger")
@@ -412,16 +424,29 @@ head(calls)
 length(unique(calls[,"NE_id"]))
 ```
 
+We observe that this example dataset satisfies the basic five-column input format 
+required by `r Biocpkg("CNVRanger")`.
+
+The last column contains the integer copy
+number state for each call, encoded as
+
+- `0`: homozygous deletion (2-copy loss)
+- `1`: heterozygous deletion (1-copy loss)
+- `2`: normal diploid state
+- `3`: 1-copy gain
+- `4`: amplification (>= 2-copy gain)
+
 #### Representation as a `GRangesList`
 
-We group the calls by sample ID, resulting in a `GRangesList`.
+Once read into an R `data.frame`, we group the calls by sample ID and convert 
+them to a `GRangesList`.
 Each element of the list corresponds to a sample, and contains the genomic 
 coordinates of the CNV calls for this sample (along with the copy number state 
-in the `State` metadata column).  
+in the `state` metadata column).  
 
 ```{r cnvCalls}
 grl <- makeGRangesListFromDataFrame(calls, 
-    split.field="NE_id", keep.extra.columns=TRUE)
+    split.field = "NE_id", keep.extra.columns = TRUE)
 grl
 ```
 
@@ -476,6 +501,11 @@ colData(ra)
 
 ### Summarizing individual CNV calls across a population
 
+```{r summarization, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
+vign.dir <- system.file("vignettes", package = "CNVRanger")
+knitr::include_graphics(file.path(vign.dir, "Summarization.png"))
+```
+
 In CNV analysis, it is often of interest to summarize individual calls across
 the population, (i.e. to define CNV regions), for subsequent association
 analysis with expression and phenotype data.
@@ -496,7 +526,7 @@ This trims low-density areas as defined by the `density` argument,
 which is set here to <10\% of the number of calls within a summarized region.
 
 ```{r cnvrs}
-cnvrs <- populationRanges(grl, density=0.1)
+cnvrs <- populationRanges(grl, density = 0.1)
 cnvrs
 ```
 
@@ -519,21 +549,107 @@ represent random aberrations
 By setting `est.recur=TRUE`, we deploy a `GISTIC`-like significance estimation 
 
 ```{r gistic}
-cnvrs <- populationRanges(grl, density=0.1, est.recur=TRUE)
+cnvrs <- populationRanges(grl, density = 0.1, est.recur = TRUE)
 cnvrs
 ```
 
 and filter for recurrent CNVs that exceed a significance threshold of 0.05. 
 
 ```{r recurr}
-cnvrs[cnvrs$pvalue < 0.05]
+subset(cnvrs, pvalue < 0.05)
 ```
 
+We can illustrate the landscape of recurrent CNV regions using the function
+`plotRecurrentRegions`.
+We therefore provide the summarized CNV regions, a valid
+[UCSC](https://genome.ucsc.edu/cgi-bin/hgGateway) genome assembly, and a
+chromosome of interest.
+
+```{r recurrViz}
+plotRecurrentRegions(cnvrs, genome = "bosTau6", chr = "chr1")
+```
+
+The function plots (from top to bottom):
+(i) an ideogram of the chromosome (note that staining bands are not available for `bosTau6`), 
+(ii) a genome axis indicating the chromosomal position, (iii) a bar plot showing
+for each CNV region the number of samples with a CNV call in that region, and
+(iv) an annotation track that indicates whether this is a _recurrent_ region
+according to a significance threshold (an argument to the function, default: 0.05).
+
+
 ### Overlap analysis of CNVs with functional genomic regions
+
+```{r overlap, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
+vign.dir <- system.file("vignettes", package = "CNVRanger")
+knitr::include_graphics(file.path(vign.dir, "Overlap.png"))
+```
 
 Once individual CNV calls have been summarized across the population, it is 
 typically of interest whether the resulting CNV regions overlap with functional 
 genomic regions such as genes, promoters, or enhancers. 
+
+To obtain the location of protein-coding genes, we query available
+_Bos taurus_ annotation from Ensembl
+
+```{r getBtGenes}
+library(AnnotationHub)
+ah <- AnnotationHub::AnnotationHub()
+ahDb <- AnnotationHub::query(ah, pattern = c("Bos taurus", "EnsDb"))
+ahDb
+```
+
+and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).
+
+```{r getBtGenes2}
+ahEdb <- ahDb[["AH60948"]]
+bt.genes <- ensembldb::genes(ahEdb)
+GenomeInfoDb::seqlevelsStyle(bt.genes) <- "UCSC"
+bt.genes
+```
+
+To speed up the example, we restrict analysis to chromosomes 1 and 2.
+
+```{r formatBtGenes}
+sel.genes <- subset(bt.genes, seqnames %in% paste0("chr", 1:2))
+sel.genes <- subset(sel.genes, gene_biotype == "protein_coding")
+sel.cnvrs <- subset(cnvrs, seqnames %in% paste0("chr", 1:2))
+```
+
+## Finding and illustrating overlaps
+
+The `findOverlaps` function from the `r Biocpkg("GenomicRanges")` package is a
+general function for finding overlaps between two sets of genomic regions.
+Here, we use the function to find protein-coding genes (our `query` region set)
+overlapping the summarized CNV regions (our `subject` region set).
+
+Resulting overlaps are represented as a `Hits` object, from which overlapping
+query and subject regions can be obtained with dedicated accessor functions
+(named `queryHits` and `subjectHits`, respectively).
+Here, we use these functions to also annotate the CNV type (gain/loss) for genes
+overlapping with CNVs.
+
+```{r findOlaps}
+olaps <- GenomicRanges::findOverlaps(sel.genes, sel.cnvrs, ignore.strand=TRUE)
+qh <- S4Vectors::queryHits(olaps)
+sh <- S4Vectors::subjectHits(olaps)
+cgenes <- sel.genes[qh]
+cgenes$type <- sel.cnvrs$type[sh]
+subset(cgenes, select = "type")
+```
+
+It might also be of interest to illustrate the original CNV calls on overlapping
+genomic features (here: protein-coding genes).
+For this purpose, an `oncoPrint` plot provides a useful summary in a rectangular
+fashion (genes in the rows, samples in the columns).
+Stacked barplots on the top and the right of the plot display the number of
+altered genes per sample and the number of altered samples per gene, respectively.  
+
+```{r vizOlaps}
+cnvOncoPrint(grl, cgenes)
+```
+
+## Overlap permutation test
+
 As a certain amount of overlap can be expected just by chance, an assessment of 
 statistical significance is needed to decide whether the observed overlap is 
 greater (enrichment) or less (depletion) than expected by chance. 
@@ -555,34 +671,7 @@ rarely subject to long-range structural variation such as CNV.
 Hence, is the overlap between CNVs and protein-coding genes less than expected by
 chance?
 
-To obtain the location of protein-coding genes, we query available 
-_Bos taurus_ annotation from Ensembl 
-
-```{r getBtGenes}
-library(AnnotationHub)
-ah <- AnnotationHub()
-ahDb <- query(ah, pattern = c("Bos taurus", "EnsDb"))
-ahDb
-```
-
-and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).
-
-```{r getBtGenes2}
-ahEdb <- ahDb[["AH60948"]]
-bt.genes <- genes(ahEdb)
-seqlevels(bt.genes) <- paste0("chr", seqlevels(bt.genes))
-bt.genes
-```
-
-To speed up the example, we restrict analysis to chromosomes 1 and 2. 
-
-```{r formatBtGenes}
-sel.genes <- bt.genes[seqnames(bt.genes) %in% c("chr1", "chr2")]
-sel.genes <- sel.genes[sel.genes$gene_biotype == "protein_coding"]
-sel.cnvrs <- cnvrs[seqnames(cnvrs) %in% c("chr1", "chr2")]
-```
-
-Now, we are applying an overlap permutation test with 100 permutations
+To answer this question, we apply an overlap permutation test with 100 permutations
 (`ntimes=100`), while maintaining chromosomal distribution of the CNV
 region set (`per.chromosome=TRUE`). 
 Furthermore, we use the option `count.once=TRUE` to count an overlapping CNV 
@@ -618,11 +707,20 @@ This finding is consistent with our observations across the whole genome
 and findings from the 1000 Genomes Poject 
 ([Sudmant et al., 2015](https://www.nature.com/articles/nature15394)).
 
+```{r vizPermTest}
+plot(res)
+```
+
 Note: the function `regioneR::permTest` allows to incorporate user-defined
 functions for randomizing regions and evaluating additional measures of overlap
 such as total genomic size in bp.
 
 ### CNV-expression association analysis
+
+```{r expression, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
+vign.dir <- system.file("vignettes", package = "CNVRanger")
+knitr::include_graphics(file.path(vign.dir, "Expression.png"))
+```
 
 Studies of expression quantitative trait loci (eQTLs) aim at the discovery of 
 genetic variants that explain variation in gene expression levels 
@@ -687,9 +785,8 @@ and the size of the genomic window around each CNV region (`window`).
 The `window` argument thereby determines which genes are considered for testing 
 for each CNV region and is set here to 1 Mbp. 
 
-Further, use the `min.cpm` and `min.samples` arguments to exclude from the 
-analysis (i) genes with fewer than `min.cpm` reads per million reads mapped 
-(cpm, counts per million), and (ii) CNV 
+Further, use the `filter.by.expr` and `min.samples` arguments to exclude from
+the analysis (i) genes with very low read count across samples, and (ii) CNV
 regions with fewer than `min.samples` samples in a group deviating from 2n.
 
 ```{r cnvEQTL}
@@ -716,13 +813,11 @@ The Cancer Genome Atlas [TCGA](https://cancergenome.nih.gov),
 which can conveniently be accessed with the 
 [curatedTCGAData](http://bioconductor.org/packages/curatedTCGAData) package.
 
-```{r tcgaSetup}
+```{r tcgaSetup, message = FALSE}
 library(curatedTCGAData)
-suppressMessages(
-    gbm <- curatedTCGAData("GBM", 
-        assays=c("GISTIC_Peaks", "CNVSNP", "RNASeq2GeneNorm"), 
+gbm <- curatedTCGAData::curatedTCGAData("GBM",
+        assays=c("GISTIC_Peaks", "CNVSNP", "RNASeq2GeneNorm"),
         dry.run=FALSE)
-)
 gbm
 ```
 
@@ -740,14 +835,16 @@ we use the function `symbolsToRanges` from the
 [TCGAutils](http://bioconductor.org/packages/TCGAutils) package.
 For demonstration, we restrict the analysis to chromosome 1 and 2. 
 
-```{r tcgaGeneAnno}
+```{r tcgaGeneAnno, message = FALSE}
 library(TCGAutils)
-gbm <- suppressMessages(symbolsToRanges(gbm, unmapped=FALSE))
-for(i in 1:3) 
+gbm <- TCGAutils::symbolsToRanges(gbm, unmapped=FALSE)
+for(i in 1:3)
 {
-    genome(rowRanges(gbm[[i]])) <- "hg19"
-    seqlevelsStyle(rowRanges(gbm[[i]])) <- "UCSC"
-    ind <- as.character(seqnames(rowRanges(gbm[[i]]))) %in% c("chr1", "chr2")
+    rr <- rowRanges(gbm[[i]])
+    GenomeInfoDb::genome(rr) <- "hg19"
+    GenomeInfoDb::seqlevelsStyle(rr) <- "UCSC"
+    ind <- as.character(seqnames(rr)) %in% c("chr1", "chr2")
+    rowRanges(gbm[[i]]) <- rr
     gbm[[i]] <- gbm[[i]][ind,]
 }
 gbm
@@ -759,43 +856,85 @@ _Primary Solid Tumor_ samples using the `splitAssays` function from the
 `TCGAutils` package.
 
 ```{r gbmIntersect}
-gbm <- intersectColumns(gbm)
-sampleTables(gbm)
-data(sampleTypes)
+gbm <- MultiAssayExperiment::intersectColumns(gbm)
+TCGAutils::sampleTables(gbm)
+data(sampleTypes, package="TCGAutils")
 sampleTypes
-gbm <- splitAssays(gbm, sampleCodes="01")
+gbm <- TCGAutils::splitAssays(gbm, sampleCodes="01")
 gbm
 ```
 
-We transform CN estimates into CN states where states are encoded as:
+The SNP-based CNV calls from TCGA are provided as segmented log2 copy number ratios. 
 
-- `0`: homozygous deletion (2-copy loss)
-- `1`: heterozygous deletion (1-copy loss)
-- `2`: normal diploid state
-- `3`: 1-copy gain
-- `4`: amplification (>= 2-copy gain)  
+```{r segmean}
+ind <- grep("CNVSNP", names(gbm))
+head( mcols(gbm[[ind]]) )
+summary( mcols(gbm[[ind]])$Segment_Mean )
+```
+
+It is thus necessary to convert them to integer copy number states for further
+analysis with `r Biocpkg("CNVRanger")`.
+
+In a diploid genome, a single-copy gain in a perfectly pure, homogeneous sample
+has a copy ratio of 3/2. On log2 scale, this is log2(3/2) = 0.585, and a
+single-copy loss is log2(1/2) = -1.0.
+
+We can roughly convert a log ratio `lr` to an integer copy number by
+
+```{r lr2int, eval=FALSE}
+round( (2^lr) * 2)
+```
+
+Note that this is not the ideal way to calculate absolute integer copy numbers.
+Especially in cancer, differences in tumor purity, tumor ploidy, and subclonality
+can substantially interfere with the assumption of a pure homogeneous sample.
+See [ABSOLUTE](https://doi.org/10.1038/nbt.2203) and the `r Biocpkg("PureCN")`
+package for accurately taking such tumor characteristics into account.
+
+However, without additional information we transform the log ratios into
+integer copy number states using the rough approximation outlined above.
 
 ```{r transformToStates}
-ind <- grep("CNVSNP", names(gbm))
-state <- round(mcols(gbm[[ind]])$Segment_Mean)
-state[state > 2] <- 2
-state[state < -2] <- -2
-mcols(gbm[[ind]])$State <- state + 2
+smean <- mcols(gbm[[ind]])$Segment_Mean
+state <- round(2^smean * 2)
+state[state > 4] <- 4
+mcols(gbm[[ind]])$state <- state
+gbm[[ind]] <- gbm[[ind]][state != 2,]
 mcols(gbm[[ind]]) <- mcols(gbm[[ind]])[,3:1]
-table(mcols(gbm[[ind]])$State)
+table(mcols(gbm[[ind]])$state)
 ```
 
 The data is now ready for CNV-expression association analysis, where we find 
-only two CNV regions with sufficient sample size for testing using the default
+only four CNV regions with sufficient sample size for testing using the default
 value of 10 for the `minSamples` argument.
 
 ```{r gbmEQTL}
-res <- cnvEQTL(cnvrs="01_GBM_GISTIC_Peaks-20160128", 
-    calls="01_GBM_CNVSNP-20160128", 
-    rcounts="01_GBM_RNASeq2GeneNorm-20160128_ranged", 
-    data=gbm, window="1Mbp", verbose=TRUE)
+res <- cnvEQTL(cnvrs = "01_GBM_GISTIC_Peaks-20160128", 
+               calls = "01_GBM_CNVSNP-20160128", 
+               rcounts = "01_GBM_RNASeq2GeneNorm-20160128_ranged", 
+               data = gbm, window = "1Mbp", verbose = TRUE)
 res
 ```
+
+We can illustrate differential expression of genes in the neighborhood of a CNV
+region of interest using the function `plotEQTL`.
+
+```{r plotEQTL}
+res[2]
+(r <- GRanges(names(res)[2]))
+plotEQTL(cnvr=r, genes=res[[2]], genome="hg19", cn="CN1")
+```
+
+The plot shows consistent decreased expression (negative log2 fold change)
+of genes in the neighborhood of the CNV region, when comparing samples with a one 
+copy loss (1$n$) in that region to the 2$n$ reference group.
+
+Note that a significant expression change is not only observed for genes locating
+within the CNV region (dosage effect, here: PARK7), but also genes locating in
+close proximity of the CNV region (neighborhood effect, here: CAMTA1 and RERE).
+This is consistent with previous observations in mouse
+[Cahan et al., 2009](https://doi.org/10.1038/ng.350) and our observations in cattle 
+[Geistlinger et al., 2018](https://doi.org/10.1038/s41598-018-19782-4).
 
 ## Allele-specific CNV analysis with PureCN
 
