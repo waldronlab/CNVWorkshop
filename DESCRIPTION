@@ -32,6 +32,7 @@ Imports:
 Suggests:
     AnnotationHub,
     BSgenome.Btaurus.UCSC.bosTau6.masked, 
+    Gviz,
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     knitr,
     org.Hs.eg.db,
