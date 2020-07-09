@@ -397,7 +397,7 @@ library(CNVRanger)
 
 #### Input data format
 
-`r Biocpkg("CNVRanger")` reads CNV calls from a simple file format, providing at 
+`CNVRanger` reads CNV calls from a simple file format, providing at 
 least chromosome, start position, end position, sample ID, and integer copy number 
 for each call.
 
@@ -425,7 +425,7 @@ length(unique(calls[,"NE_id"]))
 ```
 
 We observe that this example dataset satisfies the basic five-column input format 
-required by `r Biocpkg("CNVRanger")`.
+required by `CNVRanger`.
 
 The last column contains the integer copy
 number state for each call, encoded as
@@ -617,7 +617,7 @@ sel.cnvrs <- subset(cnvrs, seqnames %in% paste0("chr", 1:2))
 
 ## Finding and illustrating overlaps
 
-The `findOverlaps` function from the `r Biocpkg("GenomicRanges")` package is a
+The `findOverlaps` function from the `GenomicRanges` package is a
 general function for finding overlaps between two sets of genomic regions.
 Here, we use the function to find protein-coding genes (our `query` region set)
 overlapping the summarized CNV regions (our `subject` region set).
@@ -873,7 +873,7 @@ summary( mcols(gbm[[ind]])$Segment_Mean )
 ```
 
 It is thus necessary to convert them to integer copy number states for further
-analysis with `r Biocpkg("CNVRanger")`.
+analysis with `CNVRanger`.
 
 In a diploid genome, a single-copy gain in a perfectly pure, homogeneous sample
 has a copy ratio of 3/2. On log2 scale, this is log2(3/2) = 0.585, and a
@@ -888,7 +888,8 @@ round( (2^lr) * 2)
 Note that this is not the ideal way to calculate absolute integer copy numbers.
 Especially in cancer, differences in tumor purity, tumor ploidy, and subclonality
 can substantially interfere with the assumption of a pure homogeneous sample.
-See [ABSOLUTE](https://doi.org/10.1038/nbt.2203) and the `r Biocpkg("PureCN")`
+See [ABSOLUTE](https://doi.org/10.1038/nbt.2203) and the 
+[PureCN](http://bioconductor.org/packages/PureCN)
 package for accurately taking such tumor characteristics into account.
 
 However, without additional information we transform the log ratios into
