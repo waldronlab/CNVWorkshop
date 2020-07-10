@@ -378,7 +378,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div class="sourceCode" id="cb32"><html><body><pre class="r"><span class="fu">sparseSummarizedExperiment</span>(<span class="no">ragexp</span>)
 <span class="fu">compactSummarizedExperiment</span>(<span class="no">ragexp</span>)
 <span class="fu">disjoinSummarizedExperiment</span>(<span class="no">ragexp</span>, <span class="kw">simplify</span> <span class="kw">=</span> <span class="no">mean</span>)
-<span class="fu">qreduceSummarizedExperiment</span>(<span class="no">ragexp</span>, <span class="kw">query</span><span class="kw">=</span><span class="no">query</span>, <span class="kw">simplify</span><span class="kw">=</span><span class="no">weightedmean</span>)</pre></body></html></div>
+<span class="fu">qreduceSummarizedExperiment</span>(<span class="no">ragexp</span>, <span class="kw">query</span> <span class="kw">=</span> <span class="no">query</span>, <span class="kw">simplify</span> <span class="kw">=</span> <span class="no">weightedmean</span>)</pre></body></html></div>
 <p>Please see the <code>RaggedExperiment</code> vignette for <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/RaggedExperiment/inst/doc/RaggedExperiment.html">more details</a>.</p>
 </div>
 </div>
@@ -396,14 +396,16 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="reading-and-accessing-cnv-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#reading-and-accessing-cnv-data" class="anchor"></a>Reading and accessing CNV data</h3>
+<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Input.png" width="100%"></p>
 <p><code>CNVRanger</code> uses Bioconductor core data structures implemented in the <a href="http://bioconductor.org/packages/GenomicRanges">GenomicRanges</a> and <a href="http://bioconductor.org/packages/RaggedExperiment">RaggedExperiment</a> packages to represent, access, and manipulate CNV data.</p>
 <p>We start by loading the package.</p>
 <div class="sourceCode" id="cb33"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">CNVRanger</span>)</pre></body></html></div>
 <div id="input-data-format" class="section level4">
 <h4 class="hasAnchor">
 <a href="#input-data-format" class="anchor"></a>Input data format</h4>
+<p><code>CNVRanger</code> reads CNV calls from a simple file format, providing at least chromosome, start position, end position, sample ID, and integer copy number for each call.</p>
 <p>For demonstration, we consider CNV calls as obtained with <a href="http://penncnv.openbioinformatics.org">PennCNV</a> from SNP-chip data in a Brazilian cattle breed (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>).</p>
-<p>Here, we use a data subset and only consider CNV calls on chromosome 1 and 2, for which there are roughly 3000 CNV calls as obtained for 711 samples.</p>
+<p>Here, we use a data subset and only consider CNV calls on chromosome 1 and 2, for which there are roughly 3000 CNV calls as obtained for 711 samples. We use <code>read.csv</code> to read comma-separated values, but we could use a different function if the data were provided with a different delimiter (for example, <code>read.delim</code> for tab-separated values).</p>
 <div class="sourceCode" id="cb34"><html><body><pre class="r"><span class="no">data.dir</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">"extdata"</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">"CNVRanger"</span>)
 <span class="no">call.file</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">data.dir</span>, <span class="st">"Silva16_PONE_CNV_calls.csv"</span>)
 <span class="no">calls</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="no">call.file</span>, <span class="kw">as.is</span><span class="kw">=</span><span class="fl">TRUE</span>)
@@ -419,14 +421,28 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## 6 chr1 36337  83412 NE001648     3</code></pre>
 <div class="sourceCode" id="cb38"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span>(<span class="no">calls</span>[,<span class="st">"NE_id"</span>]))</pre></body></html></div>
 <pre><code>## [1] 711</code></pre>
+<p>We observe that this example dataset satisfies the basic five-column input format required by <code>CNVRanger</code>.</p>
+<p>The last column contains the integer copy number state for each call, encoded as</p>
+<ul>
+<li>
+<code>0</code>: homozygous deletion (2-copy loss)</li>
+<li>
+<code>1</code>: heterozygous deletion (1-copy loss)</li>
+<li>
+<code>2</code>: normal diploid state</li>
+<li>
+<code>3</code>: 1-copy gain</li>
+<li>
+<code>4</code>: amplification (&gt;= 2-copy gain)</li>
+</ul>
 </div>
 <div id="representation-as-a-grangeslist" class="section level4">
 <h4 class="hasAnchor">
 <a href="#representation-as-a-grangeslist" class="anchor"></a>Representation as a <code>GRangesList</code>
 </h4>
-<p>We group the calls by sample ID, resulting in a <code>GRangesList</code>. Each element of the list corresponds to a sample, and contains the genomic coordinates of the CNV calls for this sample (along with the copy number state in the <code>State</code> metadata column).</p>
+<p>Once read into an R <code>data.frame</code>, we group the calls by sample ID and convert them to a <code>GRangesList</code>. Each element of the list corresponds to a sample, and contains the genomic coordinates of the CNV calls for this sample (along with the copy number state in the <code>state</code> metadata column).</p>
 <div class="sourceCode" id="cb40"><html><body><pre class="r"><span class="no">grl</span> <span class="kw">&lt;-</span> <span class="fu">makeGRangesListFromDataFrame</span>(<span class="no">calls</span>,
-    <span class="kw">split.field</span><span class="kw">=</span><span class="st">"NE_id"</span>, <span class="kw">keep.extra.columns</span><span class="kw">=</span><span class="fl">TRUE</span>)
+    <span class="kw">split.field</span> <span class="kw">=</span> <span class="st">"NE_id"</span>, <span class="kw">keep.extra.columns</span> <span class="kw">=</span> <span class="fl">TRUE</span>)
 <span class="no">grl</span></pre></body></html></div>
 <pre><code>## GRangesList object of length 711:
 ## $NE001357
@@ -530,28 +546,29 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357   1267.23      5.93
-## NE001358   1006.35      7.37
-## NE001359    954.33      6.06
-## NE001360   1153.26      5.80
-## NE001361   1029.93      7.55
+## NE001357   1010.73      4.91
+## NE001358   1085.78      4.69
+## NE001359   1175.89      7.04
+## NE001360   1105.79      3.87
+## NE001361   1063.63      7.59
 ## ...            ...       ...
-## NE003962   1064.03      5.51
-## NE003963   1085.55      5.10
-## NE003966   1073.85      9.49
-## NE003967   1149.91      8.21
-## NE003968    992.37      4.91</code></pre>
+## NE003962   1181.32      3.93
+## NE003963   1171.99      5.62
+## NE003966   1261.44      7.62
+## NE003967   1078.17      5.44
+## NE003968   1151.47      7.75</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
 <h3 class="hasAnchor">
 <a href="#summarizing-individual-cnv-calls-across-a-population" class="anchor"></a>Summarizing individual CNV calls across a population</h3>
+<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Summarization.png" width="40%" style="float:right; padding:10px"></p>
 <p>In CNV analysis, it is often of interest to summarize individual calls across the population, (i.e. to define CNV regions), for subsequent association analysis with expression and phenotype data. In the simplest case, this just merges overlapping individual calls into summarized regions. However, this typically inflates CNV region size, and more appropriate approaches have been developed for this purpose.</p>
 <div id="trimming-low-density-areas" class="section level4">
 <h4 class="hasAnchor">
 <a href="#trimming-low-density-areas" class="anchor"></a>Trimming low-density areas</h4>
 <p>Here, we use the approach from <a href="http://www.ircgp.com/CNVRuler">CNVRuler</a> to summarize CNV calls to CNV regions (see <a href="https://academic.oup.com/view-large/figure/83392426/bts239f1.jpeg">Figure 1</a> in <a href="https://doi.org/10.1093/bioinformatics/bts239">Kim et al., 2012</a> for an illustration of the approach). This trims low-density areas as defined by the <code>density</code> argument, which is set here to &lt;10% of the number of calls within a summarized region.</p>
-<div class="sourceCode" id="cb50"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span><span class="kw">=</span><span class="fl">0.1</span>)
+<div class="sourceCode" id="cb50"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span> <span class="kw">=</span> <span class="fl">0.1</span>)
 <span class="no">cnvrs</span></pre></body></html></div>
 <pre><code>## GRanges object with 303 ranges and 2 metadata columns:
 ##         seqnames              ranges strand |      freq        type
@@ -576,7 +593,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <a href="#identifying-recurrent-regions" class="anchor"></a>Identifying recurrent regions</h4>
 <p>In particular in cancer, it is important to distinguish driver from passenger mutations, i.e. to distinguish meaningful events from random background aberrations. The <a href="http://www.broadinstitute.org/cancer/cga/gistic">GISTIC</a> method identifies those regions of the genome that are aberrant more often than would be expected by chance, with greater weight given to high amplitude events (high-level copy-number gains or homozygous deletions) that are less likely to represent random aberrations (<a href="https://doi.org/10.1073/pnas.0710052104">Beroukhim et al., 2007</a>).</p>
 <p>By setting <code>est.recur=TRUE</code>, we deploy a <code>GISTIC</code>-like significance estimation</p>
-<div class="sourceCode" id="cb52"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span><span class="kw">=</span><span class="fl">0.1</span>, <span class="kw">est.recur</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<div class="sourceCode" id="cb52"><html><body><pre class="r"><span class="no">cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/populationRanges.html">populationRanges</a></span>(<span class="no">grl</span>, <span class="kw">density</span> <span class="kw">=</span> <span class="fl">0.1</span>, <span class="kw">est.recur</span> <span class="kw">=</span> <span class="fl">TRUE</span>)
 <span class="no">cnvrs</span></pre></body></html></div>
 <pre><code>## GRanges object with 303 ranges and 3 metadata columns:
 ##         seqnames              ranges strand |      freq        type     pvalue
@@ -595,7 +612,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##   -------
 ##   seqinfo: 2 sequences from an unspecified genome; no seqlengths</code></pre>
 <p>and filter for recurrent CNVs that exceed a significance threshold of 0.05.</p>
-<div class="sourceCode" id="cb54"><html><body><pre class="r"><span class="no">cnvrs</span>[<span class="no">cnvrs</span>$<span class="no">pvalue</span> <span class="kw">&lt;</span> <span class="fl">0.05</span>]</pre></body></html></div>
+<div class="sourceCode" id="cb54"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">cnvrs</span>, <span class="no">pvalue</span> <span class="kw">&lt;</span> <span class="fl">0.05</span>)</pre></body></html></div>
 <pre><code>## GRanges object with 17 ranges and 3 metadata columns:
 ##        seqnames              ranges strand |      freq        type     pvalue
 ##           &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;character&gt;  &lt;numeric&gt;
@@ -612,20 +629,23 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##   [17]     chr2 139194749-139665914      * |        58        both  0.0392157
 ##   -------
 ##   seqinfo: 2 sequences from an unspecified genome; no seqlengths</code></pre>
+<p>We can illustrate the landscape of recurrent CNV regions using the function <code>plotRecurrentRegions</code>. We therefore provide the summarized CNV regions, a valid <a href="https://genome.ucsc.edu/cgi-bin/hgGateway">UCSC</a> genome assembly, and a chromosome of interest.</p>
+<div class="sourceCode" id="cb56"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/plotRecurrentRegions.html">plotRecurrentRegions</a></span>(<span class="no">cnvrs</span>, <span class="kw">genome</span> <span class="kw">=</span> <span class="st">"bosTau6"</span>, <span class="kw">chr</span> <span class="kw">=</span> <span class="st">"chr1"</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/recurrViz-1.png" width="100%"></p>
+<p>The function plots (from top to bottom): (i) an ideogram of the chromosome (note that staining bands are not available for <code>bosTau6</code>), (ii) a genome axis indicating the chromosomal position, (iii) a bar plot showing for each CNV region the number of samples with a CNV call in that region, and (iv) an annotation track that indicates whether this is a <em>recurrent</em> region according to a significance threshold (an argument to the function, default: 0.05).</p>
 </div>
 </div>
 <div id="overlap-analysis-of-cnvs-with-functional-genomic-regions" class="section level3">
 <h3 class="hasAnchor">
 <a href="#overlap-analysis-of-cnvs-with-functional-genomic-regions" class="anchor"></a>Overlap analysis of CNVs with functional genomic regions</h3>
-<p>Once individual CNV calls have been summarized across the population, it is typically of interest whether the resulting CNV regions overlap with functional genomic regions such as genes, promoters, or enhancers. As a certain amount of overlap can be expected just by chance, an assessment of statistical significance is needed to decide whether the observed overlap is greater (enrichment) or less (depletion) than expected by chance.</p>
-<p>The <a href="http://bioconductor.org/packages/regioneR">regioneR</a> package implements a general framework for testing overlaps of genomic regions based on permutation sampling. This allows to repeatedly sample random regions from the genome, matching size and chromosomal distribution of the region set under study (here: the CNV regions). By recomputing the overlap with the functional features in each permutation, statistical significance of the observed overlap can be assessed.</p>
-<p>We demonstrate in the following how this strategy can be used to assess the overlap between the detected CNV regions and protein-coding regions in the cattle genome. We expect to find a depletion as protein-coding regions are highly conserved and rarely subject to long-range structural variation such as CNV. Hence, is the overlap between CNVs and protein-coding genes less than expected by chance?</p>
+<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Overlap.png" width="40%" style="float:right; padding:10px"></p>
+<p>Once individual CNV calls have been summarized across the population, it is typically of interest whether the resulting CNV regions overlap with functional genomic regions such as genes, promoters, or enhancers.</p>
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
-<div class="sourceCode" id="cb56"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
-<span class="no">ah</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/Rtmp4KF5Ao/BiocFileCache</code></pre>
+<div class="sourceCode" id="cb57"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
+<span class="no">ah</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
+<pre><code>## using temporary cache /tmp/RtmpUW0TrD/BiocFileCache</code></pre>
 <pre><code>## snapshotDate(): 2020-06-18</code></pre>
-<div class="sourceCode" id="cb59"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
+<div class="sourceCode" id="cb60"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
 <pre><code>## AnnotationHub with 14 records
 ## # snapshotDate(): 2020-06-18
@@ -650,13 +670,13 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##   AH78724 | Ensembl 99 EnsDb for Bos taurus 
 ##   AH79622 | Ensembl 100 EnsDb for Bos taurus</code></pre>
 <p>and retrieve gene coordinates in the UMD3.1 assembly (Ensembl 92).</p>
-<div class="sourceCode" id="cb61"><html><body><pre class="r"><span class="no">ahEdb</span> <span class="kw">&lt;-</span> <span class="no">ahDb</span><span class="kw">[[</span><span class="st">"AH60948"</span>]]</pre></body></html></div>
+<div class="sourceCode" id="cb62"><html><body><pre class="r"><span class="no">ahEdb</span> <span class="kw">&lt;-</span> <span class="no">ahDb</span><span class="kw">[[</span><span class="st">"AH60948"</span>]]</pre></body></html></div>
 <pre><code>## downloading 1 resources</code></pre>
 <pre><code>## retrieving 1 resource</code></pre>
 <pre><code>## loading from cache</code></pre>
 <pre><code>## require("ensembldb")</code></pre>
-<div class="sourceCode" id="cb66"><html><body><pre class="r"><span class="no">bt.genes</span> <span class="kw">&lt;-</span> <span class="fu">genes</span>(<span class="no">ahEdb</span>)
-<span class="fu">seqlevels</span>(<span class="no">bt.genes</span>) <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fu">seqlevels</span>(<span class="no">bt.genes</span>))
+<div class="sourceCode" id="cb67"><html><body><pre class="r"><span class="no">bt.genes</span> <span class="kw">&lt;-</span> <span class="kw pkg">ensembldb</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/ensembldb/man/EnsDb-exonsBy.html">genes</a></span>(<span class="no">ahEdb</span>)
+<span class="kw pkg">GenomeInfoDb</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomeInfoDb/man/seqlevelsStyle.html">seqlevelsStyle</a></span>(<span class="no">bt.genes</span>) <span class="kw">&lt;-</span> <span class="st">"UCSC"</span>
 <span class="no">bt.genes</span></pre></body></html></div>
 <pre><code>## GRanges object with 24616 ranges and 8 metadata columns:
 ##                      seqnames              ranges strand |            gene_id
@@ -714,18 +734,57 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##   -------
 ##   seqinfo: 48 sequences from UMD3.1 genome</code></pre>
 <p>To speed up the example, we restrict analysis to chromosomes 1 and 2.</p>
-<div class="sourceCode" id="cb68"><html><body><pre class="r"><span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="no">bt.genes</span>[<span class="fu">seqnames</span>(<span class="no">bt.genes</span>) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)]
-<span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="no">sel.genes</span>[<span class="no">sel.genes</span>$<span class="no">gene_biotype</span> <span class="kw">==</span> <span class="st">"protein_coding"</span>]
-<span class="no">sel.cnvrs</span> <span class="kw">&lt;-</span> <span class="no">cnvrs</span>[<span class="fu">seqnames</span>(<span class="no">cnvrs</span>) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)]</pre></body></html></div>
-<p>Now, we are applying an overlap permutation test with 100 permutations (<code>ntimes=100</code>), while maintaining chromosomal distribution of the CNV region set (<code>per.chromosome=TRUE</code>). Furthermore, we use the option <code>count.once=TRUE</code> to count an overlapping CNV region only once, even if it overlaps with 2 or more genes. We also allow random regions to be sampled from the entire genome (<code>mask=NA</code>), although in certain scenarios masking certain regions such as telomeres and centromeres is advisable. Also note that we use 100 permutations for demonstration only. To draw robust conclusions a minimum of 1000 permutations should be carried out.</p>
-<div class="sourceCode" id="cb69"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">regioneR</span>)
+<div class="sourceCode" id="cb69"><html><body><pre class="r"><span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">bt.genes</span>, <span class="no">seqnames</span> <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fl">1</span>:<span class="fl">2</span>))
+<span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">sel.genes</span>, <span class="no">gene_biotype</span> <span class="kw">==</span> <span class="st">"protein_coding"</span>)
+<span class="no">sel.cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">cnvrs</span>, <span class="no">seqnames</span> <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fl">1</span>:<span class="fl">2</span>))</pre></body></html></div>
+</div>
+</div>
+<div id="finding-and-illustrating-overlaps" class="section level2">
+<h2 class="hasAnchor">
+<a href="#finding-and-illustrating-overlaps" class="anchor"></a>Finding and illustrating overlaps</h2>
+<p>The <code>findOverlaps</code> function from the <code>GenomicRanges</code> package is a general function for finding overlaps between two sets of genomic regions. Here, we use the function to find protein-coding genes (our <code>query</code> region set) overlapping the summarized CNV regions (our <code>subject</code> region set).</p>
+<p>Resulting overlaps are represented as a <code>Hits</code> object, from which overlapping query and subject regions can be obtained with dedicated accessor functions (named <code>queryHits</code> and <code>subjectHits</code>, respectively). Here, we use these functions to also annotate the CNV type (gain/loss) for genes overlapping with CNVs.</p>
+<div class="sourceCode" id="cb70"><html><body><pre class="r"><span class="no">olaps</span> <span class="kw">&lt;-</span> <span class="kw pkg">GenomicRanges</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/findOverlaps-methods.html">findOverlaps</a></span>(<span class="no">sel.genes</span>, <span class="no">sel.cnvrs</span>, <span class="kw">ignore.strand</span><span class="kw">=</span><span class="fl">TRUE</span>)
+<span class="no">qh</span> <span class="kw">&lt;-</span> <span class="kw pkg">S4Vectors</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Hits-class.html">queryHits</a></span>(<span class="no">olaps</span>)
+<span class="no">sh</span> <span class="kw">&lt;-</span> <span class="kw pkg">S4Vectors</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Hits-class.html">subjectHits</a></span>(<span class="no">olaps</span>)
+<span class="no">cgenes</span> <span class="kw">&lt;-</span> <span class="no">sel.genes</span>[<span class="no">qh</span>]
+<span class="no">cgenes</span>$<span class="no">type</span> <span class="kw">&lt;-</span> <span class="no">sel.cnvrs</span>$<span class="no">type</span>[<span class="no">sh</span>]
+<span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">cgenes</span>, <span class="kw">select</span> <span class="kw">=</span> <span class="st">"type"</span>)</pre></body></html></div>
+<pre><code>## GRanges object with 123 ranges and 1 metadata column:
+##                      seqnames              ranges strand |        type
+##                         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;
+##   ENSBTAG00000039257     chr1         69695-71121      - |        gain
+##   ENSBTAG00000021819     chr1     1467704-1496151      - |        gain
+##   ENSBTAG00000019404     chr1     1563137-1591758      - |        gain
+##   ENSBTAG00000015212     chr1     1593295-1627137      - |        gain
+##   ENSBTAG00000000597     chr1   18058709-18207251      + |        loss
+##                  ...      ...                 ...    ... .         ...
+##   ENSBTAG00000003822     chr2 136193743-136239981      - |        loss
+##   ENSBTAG00000013281     chr2 136276529-136314563      + |        loss
+##   ENSBTAG00000009251     chr2 136317925-136337845      - |        loss
+##   ENSBTAG00000008510     chr2 136362255-136444097      + |        loss
+##   ENSBTAG00000014221     chr2 136457565-136461977      + |        loss
+##   -------
+##   seqinfo: 48 sequences from UMD3.1 genome</code></pre>
+<p>It might also be of interest to illustrate the original CNV calls on overlapping genomic features (here: protein-coding genes). For this purpose, an <code>oncoPrint</code> plot provides a useful summary in a rectangular fashion (genes in the rows, samples in the columns). Stacked barplots on the top and the right of the plot display the number of altered genes per sample and the number of altered samples per gene, respectively.</p>
+<div class="sourceCode" id="cb72"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvOncoPrint.html">cnvOncoPrint</a></span>(<span class="no">grl</span>, <span class="no">cgenes</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizOlaps-1.png" width="100%"></p>
+</div>
+<div id="overlap-permutation-test" class="section level2">
+<h2 class="hasAnchor">
+<a href="#overlap-permutation-test" class="anchor"></a>Overlap permutation test</h2>
+<p>As a certain amount of overlap can be expected just by chance, an assessment of statistical significance is needed to decide whether the observed overlap is greater (enrichment) or less (depletion) than expected by chance.</p>
+<p>The <a href="http://bioconductor.org/packages/regioneR">regioneR</a> package implements a general framework for testing overlaps of genomic regions based on permutation sampling. This allows to repeatedly sample random regions from the genome, matching size and chromosomal distribution of the region set under study (here: the CNV regions). By recomputing the overlap with the functional features in each permutation, statistical significance of the observed overlap can be assessed.</p>
+<p>We demonstrate in the following how this strategy can be used to assess the overlap between the detected CNV regions and protein-coding regions in the cattle genome. We expect to find a depletion as protein-coding regions are highly conserved and rarely subject to long-range structural variation such as CNV. Hence, is the overlap between CNVs and protein-coding genes less than expected by chance?</p>
+<p>To answer this question, we apply an overlap permutation test with 100 permutations (<code>ntimes=100</code>), while maintaining chromosomal distribution of the CNV region set (<code>per.chromosome=TRUE</code>). Furthermore, we use the option <code>count.once=TRUE</code> to count an overlapping CNV region only once, even if it overlaps with 2 or more genes. We also allow random regions to be sampled from the entire genome (<code>mask=NA</code>), although in certain scenarios masking certain regions such as telomeres and centromeres is advisable. Also note that we use 100 permutations for demonstration only. To draw robust conclusions a minimum of 1000 permutations should be carried out.</p>
+<div class="sourceCode" id="cb73"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">regioneR</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">BSgenome.Btaurus.UCSC.bosTau6.masked</span>)
 <span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/regioneR/man/overlapPermTest.html">overlapPermTest</a></span>(<span class="kw">A</span><span class="kw">=</span><span class="no">sel.cnvrs</span>, <span class="kw">B</span><span class="kw">=</span><span class="no">sel.genes</span>, <span class="kw">ntimes</span><span class="kw">=</span><span class="fl">100</span>,
     <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
 ## P-value: 0.0495049504950495
-## Z-score: -2.0901
+## Z-score: -1.8688
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -734,16 +793,18 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## 
 ## attr(,"class")
 ## [1] "permTestResultsList"</code></pre>
-<div class="sourceCode" id="cb71"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    93.0   109.8   115.0   114.7   121.0   135.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 114.7 <span class="math inline">\(\pm\)</span> 8.5.</p>
+##    87.0   108.0   115.0   114.9   121.0   142.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 114.9 <span class="math inline">\(\pm\)</span> 9.6.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
+<div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">res</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizPermTest-1.png" width="100%"></p>
 <p>Note: the function <code><a href="https://rdrr.io/pkg/regioneR/man/permTest.html">regioneR::permTest</a></code> allows to incorporate user-defined functions for randomizing regions and evaluating additional measures of overlap such as total genomic size in bp.</p>
-</div>
 <div id="cnv-expression-association-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#cnv-expression-association-analysis" class="anchor"></a>CNV-expression association analysis</h3>
+<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Expression.png" width="40%" style="float:right; padding:10px"></p>
 <p>Studies of expression quantitative trait loci (eQTLs) aim at the discovery of genetic variants that explain variation in gene expression levels (<a href="https://www.ncbi.nlm.nih.gov/pubmed/23650636">Nica and Dermitzakis, 2013</a>). Mainly applied in the context of SNPs, the concept also naturally extends to the analysis of CNVs.</p>
 <p>The <code>CNVRanger</code> package implements association testing between CNV regions and RNA-seq read counts using <code>edgeR</code>, which applies generalized linear models based on the negative-binomial distribution while incorporating normalization factors for different library sizes.</p>
 <p>In the case of only one CN state deviating from 2n for a CNV region under investigation, this reduces to the classical 2-group comparison. For more than two states (e.g. 0n, 1n, 2n), edgeR’s ANOVA-like test is applied to test all deviating groups for significant expression differences relative to 2n.</p>
@@ -751,12 +812,12 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <h4 class="hasAnchor">
 <a href="#working-with-individual-cnv-and-rna-seq-assays" class="anchor"></a>Working with individual CNV and RNA-seq assays</h4>
 <p>We demonstrate the functionality by loading RNA-seq read count data from skeletal muscle samples for 183 Nelore cattle steers, which we analyzed for CNV-expression effects as previously described (<a href="https://doi.org/10.1038/s41598-018-19782-4">Geistlinger et al., 2018</a>).</p>
-<div class="sourceCode" id="cb73"><html><body><pre class="r"><span class="no">rseq.file</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">data.dir</span>, <span class="st">"counts_cleaned.txt"</span>)
+<div class="sourceCode" id="cb78"><html><body><pre class="r"><span class="no">rseq.file</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span>(<span class="no">data.dir</span>, <span class="st">"counts_cleaned.txt"</span>)
 <span class="no">rcounts</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.delim</a></span>(<span class="no">rseq.file</span>, <span class="kw">row.names</span><span class="kw">=</span><span class="fl">1</span>, <span class="kw">stringsAsFactors</span><span class="kw">=</span><span class="fl">FALSE</span>)
 <span class="no">rcounts</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">rcounts</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">rcounts</span>)</pre></body></html></div>
 <pre><code>## [1] 939 183</code></pre>
-<div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="no">rcounts</span>[<span class="fl">1</span>:<span class="fl">5</span>, <span class="fl">1</span>:<span class="fl">5</span>]</pre></body></html></div>
+<div class="sourceCode" id="cb80"><html><body><pre class="r"><span class="no">rcounts</span>[<span class="fl">1</span>:<span class="fl">5</span>, <span class="fl">1</span>:<span class="fl">5</span>]</pre></body></html></div>
 <pre><code>##                    NE001407 NE001408 NE001424 NE001439 NE001448
 ## ENSBTAG00000000088       64       65      233      135      134
 ## ENSBTAG00000000160       20       28       50       13       18
@@ -764,7 +825,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## ENSBTAG00000000201      252      271      544      155      334
 ## ENSBTAG00000000210      268      379      486      172      443</code></pre>
 <p>For demonstration, we restrict analysis to the 939 genes on chromosome 1 and 2, and store the RNA-seq expression data in a <code>SummarizedExperiment</code>.</p>
-<div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">SummarizedExperiment</span>)
+<div class="sourceCode" id="cb82"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">SummarizedExperiment</span>)
 <span class="no">rse</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">SummarizedExperiment</a></span>(<span class="kw">assays</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">rcounts</span><span class="kw">=</span><span class="no">rcounts</span>),
                 <span class="kw">rowRanges</span><span class="kw">=</span><span class="fu">granges</span>(<span class="no">sel.genes</span>)[<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(<span class="no">rcounts</span>)])
 <span class="no">rse</span></pre></body></html></div>
@@ -780,8 +841,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <p>Assuming distinct modes of action, effects observed in the CNV-expression analysis are typically divided into (i) local effects (<em>cis</em>), where expression changes coincide with CNVs in the respective genes, and (ii) distal effects (<em>trans</em>), where CNVs supposedly affect trans-acting regulators such as transcription factors.</p>
 <p>However, due to power considerations and to avoid detection of spurious effects, stringent filtering of (i) not sufficiently expressed genes, and (ii) CNV regions with insufficient sample size in groups deviating from 2n, should be carried out when testing for distal effects. Local effects have a clear spatial indication and the number of genes locating in or close to a CNV region of interest is typically small; testing for differential expression between CN states is thus generally better powered for local effects and less stringent filter criteria can be applied.</p>
 <p>In the following, we carry out CNV-expression association analysis by providing the CNV regions to test (<code>cnvrs</code>), the individual CNV calls (<code>grl</code>) to determine per-sample CN state in each CNV region, the RNA-seq read counts (<code>rse</code>), and the size of the genomic window around each CNV region (<code>window</code>). The <code>window</code> argument thereby determines which genes are considered for testing for each CNV region and is set here to 1 Mbp.</p>
-<p>Further, use the <code>min.cpm</code> and <code>min.samples</code> arguments to exclude from the analysis (i) genes with fewer than <code>min.cpm</code> reads per million reads mapped (cpm, counts per million), and (ii) CNV regions with fewer than <code>min.samples</code> samples in a group deviating from 2n.</p>
-<div class="sourceCode" id="cb79"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="no">cnvrs</span>, <span class="no">grl</span>, <span class="no">rse</span>, <span class="kw">window</span><span class="kw">=</span><span class="st">"1Mbp"</span>, <span class="kw">verbose</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+<p>Further, use the <code>filter.by.expr</code> and <code>min.samples</code> arguments to exclude from the analysis (i) genes with very low read count across samples, and (ii) CNV regions with fewer than <code>min.samples</code> samples in a group deviating from 2n.</p>
+<div class="sourceCode" id="cb84"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="no">cnvrs</span>, <span class="no">grl</span>, <span class="no">rse</span>, <span class="kw">window</span><span class="kw">=</span><span class="st">"1Mbp"</span>, <span class="kw">verbose</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
 <pre><code>## Restricting analysis to 179 intersecting samples</code></pre>
 <pre><code>## Preprocessing RNA-seq data ...</code></pre>
 <pre><code>## Summarizing per-sample CN state in each CNV region</code></pre>
@@ -799,7 +860,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## 10 of 12</code></pre>
 <pre><code>## 11 of 12</code></pre>
 <pre><code>## 12 of 12</code></pre>
-<div class="sourceCode" id="cb97"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
+<div class="sourceCode" id="cb102"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
 <pre><code>## GRangesList object of length 12:
 ## $`chr1:16947-111645`
 ## GRanges object with 5 ranges and 5 metadata columns:
@@ -829,12 +890,10 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <a href="#working-with-tcga-data-stored-in-a-multiassayexperiment" class="anchor"></a>Working with TCGA data stored in a <code>MultiAssayExperiment</code>
 </h4>
 <p>In the previous section, we individually prepared the CNV and RNA-seq data for CNV-expression association analysis. In the following, we demonstrate how to perform an integrated preparation of the two assays when stored in a <a href="http://bioconductor.org/packages/MultiAssayExperiment">MultiAssayExperiment</a> We therefore consider glioblastoma <a href="https://cancergenome.nih.gov/cancersselected/glioblastomamultiforme">GBM</a> data from The Cancer Genome Atlas <a href="https://cancergenome.nih.gov">TCGA</a>, which can conveniently be accessed with the <a href="http://bioconductor.org/packages/curatedTCGAData">curatedTCGAData</a> package.</p>
-<div class="sourceCode" id="cb99"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">curatedTCGAData</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressMessages</a></span>(
-    <span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedTCGAData/man/curatedTCGAData.html">curatedTCGAData</a></span>(<span class="st">"GBM"</span>,
+<div class="sourceCode" id="cb104"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">curatedTCGAData</span>)
+<span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="kw pkg">curatedTCGAData</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/curatedTCGAData/man/curatedTCGAData.html">curatedTCGAData</a></span>(<span class="st">"GBM"</span>,
         <span class="kw">assays</span><span class="kw">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"GISTIC_Peaks"</span>, <span class="st">"CNVSNP"</span>, <span class="st">"RNASeq2GeneNorm"</span>),
         <span class="kw">dry.run</span><span class="kw">=</span><span class="fl">FALSE</span>)
-)
 <span class="no">gbm</span></pre></body></html></div>
 <pre><code>## A MultiAssayExperiment object of 3 listed
 ##  experiments with user-defined names and respective classes.
@@ -857,13 +916,15 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <li>the normalized RNA-seq gene expression values in a <code>SummarizedExperiment</code> (<code>GBM_RNASeq2GeneNorm</code>).</li>
 </ul>
 <p>To annotate the genomic coordinates of the genes measured in the RNA-seq assay, we use the function <code>symbolsToRanges</code> from the <a href="http://bioconductor.org/packages/TCGAutils">TCGAutils</a> package. For demonstration, we restrict the analysis to chromosome 1 and 2.</p>
-<div class="sourceCode" id="cb101"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">TCGAutils</span>)
-<span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressMessages</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/simplifyTCGA.html">symbolsToRanges</a></span>(<span class="no">gbm</span>, <span class="kw">unmapped</span><span class="kw">=</span><span class="fl">FALSE</span>))
+<div class="sourceCode" id="cb106"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">TCGAutils</span>)
+<span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="kw pkg">TCGAutils</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/simplifyTCGA.html">symbolsToRanges</a></span>(<span class="no">gbm</span>, <span class="kw">unmapped</span><span class="kw">=</span><span class="fl">FALSE</span>)
 <span class="kw">for</span>(<span class="no">i</span> <span class="kw">in</span> <span class="fl">1</span>:<span class="fl">3</span>)
 {
-    <span class="fu">genome</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]])) <span class="kw">&lt;-</span> <span class="st">"hg19"</span>
-    <span class="fu">seqlevelsStyle</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]])) <span class="kw">&lt;-</span> <span class="st">"UCSC"</span>
-    <span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(<span class="fu">seqnames</span>(<span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]]))) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)
+    <span class="no">rr</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]])
+    <span class="kw pkg">GenomeInfoDb</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomeInfoDb/man/seqinfo.html">genome</a></span>(<span class="no">rr</span>) <span class="kw">&lt;-</span> <span class="st">"NCBI37"</span>
+    <span class="kw pkg">GenomeInfoDb</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomeInfoDb/man/seqlevelsStyle.html">seqlevelsStyle</a></span>(<span class="no">rr</span>) <span class="kw">&lt;-</span> <span class="st">"UCSC"</span>
+    <span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(<span class="fu">seqnames</span>(<span class="no">rr</span>)) <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"chr1"</span>, <span class="st">"chr2"</span>)
+    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/RangedSummarizedExperiment-class.html">rowRanges</a></span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]]) <span class="kw">&lt;-</span> <span class="no">rr</span>
     <span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]] <span class="kw">&lt;-</span> <span class="no">gbm</span><span class="kw">[[</span><span class="no">i</span>]][<span class="no">ind</span>,]
 }
 <span class="no">gbm</span></pre></body></html></div>
@@ -882,8 +943,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##  assays() - convert ExperimentList to a SimpleList of matrices
 ##  exportClass() - save all data to files</code></pre>
 <p>We now restrict the analysis to intersecting patients of the three assays using <code>MultiAssayExperiment</code>’s <code>intersectColumns</code> function, and select <em>Primary Solid Tumor</em> samples using the <code>splitAssays</code> function from the <code>TCGAutils</code> package.</p>
-<div class="sourceCode" id="cb103"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu">intersectColumns</span>(<span class="no">gbm</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">sampleTables</a></span>(<span class="no">gbm</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb108"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="kw pkg">MultiAssayExperiment</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/MultiAssayExperiment/man/MultiAssayExperiment-helpers.html">intersectColumns</a></span>(<span class="no">gbm</span>)
+<span class="kw pkg">TCGAutils</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">sampleTables</a></span>(<span class="no">gbm</span>)</pre></body></html></div>
 <pre><code>## $`GBM_CNVSNP-20160128`
 ## 
 ##  01  02  10  11 
@@ -898,7 +959,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## 
 ##  01  02 
 ## 147  13</code></pre>
-<div class="sourceCode" id="cb105"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">sampleTypes</span>)
+<div class="sourceCode" id="cb110"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">sampleTypes</span>, <span class="kw">package</span><span class="kw">=</span><span class="st">"TCGAutils"</span>)
 <span class="no">sampleTypes</span></pre></body></html></div>
 <pre><code>##    Code                                        Definition Short.Letter.Code
 ## 1    01                               Primary Solid Tumor                TP
@@ -923,7 +984,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## 20   60                          Primary Xenograft Tissue                XP
 ## 21   61                Cell Line Derived Xenograft Tissue               XCL
 ## 22   99                                    sample type 99              99SH</code></pre>
-<div class="sourceCode" id="cb107"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">splitAssays</a></span>(<span class="no">gbm</span>, <span class="kw">sampleCodes</span><span class="kw">=</span><span class="st">"01"</span>)
+<div class="sourceCode" id="cb112"><html><body><pre class="r"><span class="no">gbm</span> <span class="kw">&lt;-</span> <span class="kw pkg">TCGAutils</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/TCGAutils/man/curatedTCGAData-helpers.html">splitAssays</a></span>(<span class="no">gbm</span>, <span class="kw">sampleCodes</span><span class="kw">=</span><span class="st">"01"</span>)
 <span class="no">gbm</span></pre></body></html></div>
 <pre><code>## A MultiAssayExperiment object of 3 listed
 ##  experiments with user-defined names and respective classes.
@@ -939,78 +1000,133 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ##  *Format() - convert into a long or wide DataFrame
 ##  assays() - convert ExperimentList to a SimpleList of matrices
 ##  exportClass() - save all data to files</code></pre>
-<p>We transform CN estimates into CN states where states are encoded as:</p>
-<ul>
-<li>
-<code>0</code>: homozygous deletion (2-copy loss)</li>
-<li>
-<code>1</code>: heterozygous deletion (1-copy loss)</li>
-<li>
-<code>2</code>: normal diploid state</li>
-<li>
-<code>3</code>: 1-copy gain</li>
-<li>
-<code>4</code>: amplification (&gt;= 2-copy gain)</li>
-</ul>
-<div class="sourceCode" id="cb109"><html><body><pre class="r"><span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span>(<span class="st">"CNVSNP"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">gbm</span>))
-<span class="no">state</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">Segment_Mean</span>)
-<span class="no">state</span>[<span class="no">state</span> <span class="kw">&gt;</span> <span class="fl">2</span>] <span class="kw">&lt;-</span> <span class="fl">2</span>
-<span class="no">state</span>[<span class="no">state</span> <span class="kw">&lt;</span> -<span class="fl">2</span>] <span class="kw">&lt;-</span> -<span class="fl">2</span>
-<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">State</span> <span class="kw">&lt;-</span> <span class="no">state</span> + <span class="fl">2</span>
+<p>The SNP-based CNV calls from TCGA are provided as segmented log2 copy number ratios.</p>
+<div class="sourceCode" id="cb114"><html><body><pre class="r"><span class="no">ind</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span>(<span class="st">"CNVSNP"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">gbm</span>))
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>( <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]]) )</pre></body></html></div>
+<pre><code>## DataFrame with 6 rows and 2 columns
+##   Num_Probes Segment_Mean
+##    &lt;numeric&gt;    &lt;numeric&gt;
+## 1        166       0.1112
+## 2          3      -1.2062
+## 3      40303       0.1086
+## 4        271      -0.3065
+## 5      88288       0.1049
+## 6      33125       0.3510</code></pre>
+<div class="sourceCode" id="cb116"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>( <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">Segment_Mean</span> )</pre></body></html></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## -8.2199 -0.9779 -0.0035 -0.6395  0.0493  6.9689</code></pre>
+<p>It is thus necessary to convert them to integer copy number states for further analysis with <code>CNVRanger</code>.</p>
+<p>In a diploid genome, a single-copy gain in a perfectly pure, homogeneous sample has a copy ratio of 3/2. On log2 scale, this is log2(3/2) = 0.585, and a single-copy loss is log2(1/2) = -1.0.</p>
+<p>We can roughly convert a log ratio <code>lr</code> to an integer copy number by</p>
+<div class="sourceCode" id="cb118"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>( (<span class="fl">2</span>^<span class="no">lr</span>) * <span class="fl">2</span>)</pre></body></html></div>
+<p>Note that this is not the ideal way to calculate absolute integer copy numbers. Especially in cancer, differences in tumor purity, tumor ploidy, and subclonality can substantially interfere with the assumption of a pure homogeneous sample. See <a href="https://doi.org/10.1038/nbt.2203">ABSOLUTE</a> and the <a href="http://bioconductor.org/packages/PureCN">PureCN</a> package for accurately taking such tumor characteristics into account.</p>
+<p>However, without additional information we transform the log ratios into integer copy number states using the rough approximation outlined above.</p>
+<div class="sourceCode" id="cb119"><html><body><pre class="r"><span class="no">smean</span> <span class="kw">&lt;-</span> <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">Segment_Mean</span>
+<span class="no">state</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span>(<span class="fl">2</span>^<span class="no">smean</span> * <span class="fl">2</span>)
+<span class="no">state</span>[<span class="no">state</span> <span class="kw">&gt;</span> <span class="fl">4</span>] <span class="kw">&lt;-</span> <span class="fl">4</span>
+<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">state</span> <span class="kw">&lt;-</span> <span class="no">state</span>
+<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]] <span class="kw">&lt;-</span> <span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]][<span class="no">state</span> <span class="kw">!=</span> <span class="fl">2</span>,]
 <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]]) <span class="kw">&lt;-</span> <span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])[,<span class="fl">3</span>:<span class="fl">1</span>]
-<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span>(<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">State</span>)</pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span>(<span class="fu">mcols</span>(<span class="no">gbm</span><span class="kw">[[</span><span class="no">ind</span>]])$<span class="no">state</span>)</pre></body></html></div>
 <pre><code>## 
-##     0     1     2     3     4 
-##  3270  3025 10223   856   444</code></pre>
-<p>The data is now ready for CNV-expression association analysis, where we find only two CNV regions with sufficient sample size for testing using the default value of 10 for the <code>minSamples</code> argument.</p>
-<div class="sourceCode" id="cb111"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="kw">cnvrs</span><span class="kw">=</span><span class="st">"01_GBM_GISTIC_Peaks-20160128"</span>,
-    <span class="kw">calls</span><span class="kw">=</span><span class="st">"01_GBM_CNVSNP-20160128"</span>,
-    <span class="kw">rcounts</span><span class="kw">=</span><span class="st">"01_GBM_RNASeq2GeneNorm-20160128_ranged"</span>,
-    <span class="kw">data</span><span class="kw">=</span><span class="no">gbm</span>, <span class="kw">window</span><span class="kw">=</span><span class="st">"1Mbp"</span>, <span class="kw">verbose</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+##    0    1    3    4 
+## 2401 4084 1005  747</code></pre>
+<p>The data is now ready for CNV-expression association analysis, where we find only four CNV regions with sufficient sample size for testing using the default value of 10 for the <code>minSamples</code> argument.</p>
+<div class="sourceCode" id="cb121"><html><body><pre class="r"><span class="no">res</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvEQTL.html">cnvEQTL</a></span>(<span class="kw">cnvrs</span> <span class="kw">=</span> <span class="st">"01_GBM_GISTIC_Peaks-20160128"</span>,
+               <span class="kw">calls</span> <span class="kw">=</span> <span class="st">"01_GBM_CNVSNP-20160128"</span>,
+               <span class="kw">rcounts</span> <span class="kw">=</span> <span class="st">"01_GBM_RNASeq2GeneNorm-20160128_ranged"</span>,
+               <span class="kw">data</span> <span class="kw">=</span> <span class="no">gbm</span>, <span class="kw">window</span> <span class="kw">=</span> <span class="st">"1Mbp"</span>, <span class="kw">verbose</span> <span class="kw">=</span> <span class="fl">TRUE</span>)</pre></body></html></div>
 <pre><code>## harmonizing input:
 ##   removing 154 sampleMap rows not in names(experiments)</code></pre>
 <pre><code>## Preprocessing RNA-seq data ...</code></pre>
 <pre><code>## Summarizing per-sample CN state in each CNV region</code></pre>
-<pre><code>## Excluding 10 cnvrs not satisfying min.samples threshold</code></pre>
-<pre><code>## Analyzing 2 regions with &gt;=1 gene in the given window</code></pre>
-<pre><code>## 1 of 2</code></pre>
-<pre><code>## 2 of 2</code></pre>
-<div class="sourceCode" id="cb119"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
-<pre><code>## GRangesList object of length 2:
+<pre><code>## Excluding 4 cnvrs not satisfying min.samples threshold</code></pre>
+<pre><code>## Analyzing 8 regions with &gt;=1 gene in the given window</code></pre>
+<pre><code>## 1 of 8</code></pre>
+<pre><code>## 2 of 8</code></pre>
+<pre><code>## 3 of 8</code></pre>
+<pre><code>## 4 of 8</code></pre>
+<pre><code>## 5 of 8</code></pre>
+<pre><code>## 6 of 8</code></pre>
+<pre><code>## 7 of 8</code></pre>
+<pre><code>## 8 of 8</code></pre>
+<div class="sourceCode" id="cb135"><html><body><pre class="r"><span class="no">res</span></pre></body></html></div>
+<pre><code>## GRangesList object of length 8:
 ## $`chr1:3394251-6475685`
-## GRanges object with 29 ranges and 3 metadata columns:
-##            seqnames          ranges strand | logFC.CN1      PValue   AdjPValue
-##               &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;
-##      RPL22     chr1 6245080-6259679      - | -0.717579 1.09084e-08 2.12713e-07
-##     CAMTA1     chr1 6845384-7829766      + | -0.704416 3.49781e-07 3.73848e-06
-##    DNAJC11     chr1 6694228-6761966      - | -0.631034 5.65001e-06 3.17118e-05
-##     KLHL21     chr1 6650779-6662929      - | -0.800432 5.69187e-06 3.17118e-05
-##      PHF13     chr1 6673756-6684093      + | -0.635552 1.19554e-05 5.70943e-05
-##        ...      ...             ...    ... .       ...         ...         ...
-##       CHD5     chr1 6161847-6240194      - | -0.660360    0.308182    0.343403
-##     PRDM16     chr1 2985742-3355185      + | -0.312048    0.433294    0.465585
-##       HES5     chr1 2460184-2461684      - |  0.410797    0.441709    0.465585
-##   TNFRSF14     chr1 2487805-2495267      + |  0.134852    0.531166    0.545144
-##   TNFRSF25     chr1 6521214-6526255      - | -0.156011    0.626617    0.626617
+## GRanges object with 29 ranges and 5 metadata columns:
+##           seqnames          ranges strand |   logFC.CN1 logFC.CN3 logFC.CN4
+##              &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; |   &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;
+##     RPL22     chr1 6245080-6259679      - |   -0.649427        NA        NA
+##      ICMT     chr1 6281253-6296044      - |   -0.558133        NA        NA
+##     PHF13     chr1 6673756-6684093      + |   -0.612529        NA        NA
+##    KLHL21     chr1 6650779-6662929      - |   -0.690419        NA        NA
+##   DNAJC11     chr1 6694228-6761966      - |   -0.545774        NA        NA
+##       ...      ...             ...    ... .         ...       ...       ...
+##    PRDM16     chr1 2985742-3355185      + |  0.08011373        NA        NA
+##     PLCH2     chr1 2407754-2436969      + | -0.07767128        NA        NA
+##      HES5     chr1 2460184-2461684      - | -0.07340805        NA        NA
+##    KCNAB2     chr1 6052358-6161253      + |  0.03471721        NA        NA
+##     AJAP1     chr1 4715105-4843851      + |  0.00176944        NA        NA
+##                PValue   AdjPValue
+##             &lt;numeric&gt;   &lt;numeric&gt;
+##     RPL22 4.54326e-13 5.38701e-12
+##      ICMT 6.78681e-11 7.51073e-10
+##     PHF13 7.68070e-10 7.08331e-09
+##    KLHL21 4.48996e-08 2.98133e-07
+##   DNAJC11 7.91784e-08 5.05524e-07
+##       ...         ...         ...
+##    PRDM16    0.783767    0.835202
+##     PLCH2    0.844676    0.871730
+##      HES5    0.861526    0.882799
+##    KCNAB2    0.875545    0.891659
+##     AJAP1    0.995473    0.995473
 ##   -------
-##   seqinfo: 25 sequences (1 circular) from hg19 genome
+##   seqinfo: 25 sequences (1 circular) from NCBI37 genome
 ## 
+## ...
+## &lt;7 more elements&gt;</code></pre>
+<p>We can illustrate differential expression of genes in the neighborhood of a CNV region of interest using the function <code>plotEQTL</code>.</p>
+<div class="sourceCode" id="cb137"><html><body><pre class="r"><span class="no">res</span>[<span class="fl">2</span>]</pre></body></html></div>
+<pre><code>## GRangesList object of length 1:
 ## $`chr1:7908902-8336254`
-## GRanges object with 10 ranges and 3 metadata columns:
-##           seqnames          ranges strand | logFC.CN1      PValue   AdjPValue
-##              &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt;   &lt;numeric&gt;   &lt;numeric&gt;
-##      RERE     chr1 8412464-8877699      - | -0.751926 2.70745e-09 1.05590e-07
-##     PARK7     chr1 8021714-8045342      + | -0.603130 3.83434e-07 3.73848e-06
-##    CAMTA1     chr1 6845384-7829766      + | -0.534687 4.94578e-07 3.85771e-06
-##   SLC45A1     chr1 8384390-8404227      + | -0.620425 1.31756e-05 5.70943e-05
-##      ENO1     chr1 8921059-8939151      - | -0.508063 1.41564e-04 4.24692e-04
-##     VAMP3     chr1 7831329-7841492      + | -0.372233 2.27742e-03 5.22466e-03
-##      H6PD     chr1 9294863-9331394      + | -0.479680 4.71034e-03 9.18517e-03
-##      PER3     chr1 7844380-7905237      + | -0.493125 2.85644e-02 4.64172e-02
-##    ERRFI1     chr1 8071779-8086393      - | -0.487835 5.78620e-02 8.35784e-02
-##    SLC2A5     chr1 9097005-9148510      - | -0.429257 7.59192e-02 1.02098e-01
+## GRanges object with 10 ranges and 5 metadata columns:
+##           seqnames          ranges strand | logFC.CN1 logFC.CN3 logFC.CN4
+##              &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt; | &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;
+##      RERE     chr1 8412464-8877699      - | -0.720739        NA        NA
+##     PARK7     chr1 8021714-8045342      + | -0.622890        NA        NA
+##    CAMTA1     chr1 6845384-7829766      + | -0.566082        NA        NA
+##   SLC45A1     chr1 8384390-8404227      + | -0.642760        NA        NA
+##      ENO1     chr1 8921059-8939151      - | -0.438693        NA        NA
+##     VAMP3     chr1 7831329-7841492      + | -0.386042        NA        NA
+##      PER3     chr1 7844380-7905237      + | -0.504608        NA        NA
+##      H6PD     chr1 9294863-9331394      + | -0.365717        NA        NA
+##    ERRFI1     chr1 8071779-8086393      - | -0.386308        NA        NA
+##    SLC2A5     chr1 9097005-9148510      - | -0.261325        NA        NA
+##                PValue   AdjPValue
+##             &lt;numeric&gt;   &lt;numeric&gt;
+##      RERE 3.48244e-09 2.75278e-08
+##     PARK7 5.42109e-09 4.09046e-08
+##    CAMTA1 2.21479e-08 1.53190e-07
+##   SLC45A1 3.49193e-06 1.75655e-05
+##      ENO1 6.32819e-04 1.94533e-03
+##     VAMP3 1.12915e-03 3.23171e-03
+##      PER3 1.75547e-02 3.68872e-02
+##      H6PD 2.41637e-02 4.77522e-02
+##    ERRFI1 1.24686e-01 1.95262e-01
+##    SLC2A5 2.67075e-01 3.57536e-01
 ##   -------
-##   seqinfo: 25 sequences (1 circular) from hg19 genome</code></pre>
+##   seqinfo: 25 sequences (1 circular) from NCBI37 genome</code></pre>
+<div class="sourceCode" id="cb139"><html><body><pre class="r">(<span class="no">r</span> <span class="kw">&lt;-</span> <span class="fu">GRanges</span>(<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">res</span>)[<span class="fl">2</span>]))</pre></body></html></div>
+<pre><code>## GRanges object with 1 range and 0 metadata columns:
+##       seqnames          ranges strand
+##          &lt;Rle&gt;       &lt;IRanges&gt;  &lt;Rle&gt;
+##   [1]     chr1 7908902-8336254      *
+##   -------
+##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
+<div class="sourceCode" id="cb141"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/plotEQTL.html">plotEQTL</a></span>(<span class="kw">cnvr</span><span class="kw">=</span><span class="no">r</span>, <span class="kw">genes</span><span class="kw">=</span><span class="no">res</span><span class="kw">[[</span><span class="fl">2</span>]], <span class="kw">genome</span><span class="kw">=</span><span class="st">"hg19"</span>, <span class="kw">cn</span><span class="kw">=</span><span class="st">"CN1"</span>)</pre></body></html></div>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/plotEQTL-1.png" width="100%"></p>
+<p>The plot shows consistent decreased expression (negative log2 fold change) of genes in the neighborhood of the CNV region, when comparing samples with a one copy loss (1<span class="math inline">\(n\)</span>) in that region to the 2<span class="math inline">\(n\)</span> reference group.</p>
+<p>Note that a significant expression change is not only observed for genes locating within the CNV region (dosage effect, here: PARK7), but also genes locating in close proximity of the CNV region (neighborhood effect, here: CAMTA1 and RERE). This is consistent with previous observations in mouse <a href="https://doi.org/10.1038/ng.350">Cahan et al., 2009</a> and our observations in cattle <a href="https://doi.org/10.1038/s41598-018-19782-4">Geistlinger et al., 2018</a>.</p>
 </div>
 </div>
 </div>
@@ -1065,7 +1181,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="vcf-and-stats-files" class="section level4">
 <h4 class="hasAnchor">
 <a href="#vcf-and-stats-files" class="anchor"></a>2. VCF and stats files</h4>
-<div class="sourceCode" id="cb121"><html><body><pre class="r">java -jar mutect.jar \
+<div class="sourceCode" id="cb142"><html><body><pre class="r">java -jar mutect.jar \
     --analysis_type MuTect \
     -R hg38.fasta \
     --dbsnp $DBSNP_VCF \
@@ -1084,16 +1200,16 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <li>which includes variant calls that are clearly germline</li>
 <li>which is commonly used for Panel-Of-Normals creation</li>
 </ul>
-<div class="sourceCode" id="cb122"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb122-1"><a href="#cb122-1"></a><span class="ex">java</span> -jar mutect.jar \</span>
-<span id="cb122-2"><a href="#cb122-2"></a>   --analysis_type MuTect \</span>
-<span id="cb122-3"><a href="#cb122-3"></a>   -R hg38.fasta \</span>
-<span id="cb122-4"><a href="#cb122-4"></a>   --artifact_detection_mode \</span>
-<span id="cb122-5"><a href="#cb122-5"></a>   --dbsnp <span class="va">$DBSNP_VCF</span> \</span>
-<span id="cb122-6"><a href="#cb122-6"></a>   --cosmic <span class="va">$COSMIC_VCF</span> \</span>
-<span id="cb122-7"><a href="#cb122-7"></a>   -dt None \</span>
-<span id="cb122-8"><a href="#cb122-8"></a>   -I:tumor <span class="va">$BAM_NORMAL</span>  \</span>
-<span id="cb122-9"><a href="#cb122-9"></a>   -o <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon_stats.txt \</span>
-<span id="cb122-10"><a href="#cb122-10"></a>   -vcf <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon.vcf</span></code></pre></div>
+<div class="sourceCode" id="cb143"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb143-1"><a href="#cb143-1"></a><span class="ex">java</span> -jar mutect.jar \</span>
+<span id="cb143-2"><a href="#cb143-2"></a>   --analysis_type MuTect \</span>
+<span id="cb143-3"><a href="#cb143-3"></a>   -R hg38.fasta \</span>
+<span id="cb143-4"><a href="#cb143-4"></a>   --artifact_detection_mode \</span>
+<span id="cb143-5"><a href="#cb143-5"></a>   --dbsnp <span class="va">$DBSNP_VCF</span> \</span>
+<span id="cb143-6"><a href="#cb143-6"></a>   --cosmic <span class="va">$COSMIC_VCF</span> \</span>
+<span id="cb143-7"><a href="#cb143-7"></a>   -dt None \</span>
+<span id="cb143-8"><a href="#cb143-8"></a>   -I:tumor <span class="va">$BAM_NORMAL</span>  \</span>
+<span id="cb143-9"><a href="#cb143-9"></a>   -o <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon_stats.txt \</span>
+<span id="cb143-10"><a href="#cb143-10"></a>   -vcf <span class="va">$OUT</span>/<span class="va">${SAMPLEID}</span>_pon.vcf</span></code></pre></div>
 <p>Depending on the type of variant you’re looking for, the PON will be generated differently. What all PONs have in common is that,</p>
 <ul>
 <li>they are made from normal samples (in this context, “normal” means derived from healthy tissue that is believed to not have any somatic alterations) and</li>
@@ -1118,7 +1234,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 </ul>
 <p><br></p>
 <p>All the pre-processed files above are used as inputs for <code>PureCN.R</code> to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.</p>
-<div class="sourceCode" id="cb123"><html><body><pre class="r">Rscript $PURECN/PureCN.R \
+<div class="sourceCode" id="cb144"><html><body><pre class="r">Rscript $PURECN/PureCN.R \
     --out $PCN_OUT/PureCN/tumor_only/$SAMPLEID \
     --tumor $PCN_OUT/tumor_cov/${SAMPLEID}_coverage_loess.txt \
     --SAMPLEID ${SAMPLEID} \
@@ -1147,17 +1263,17 @@ As long as you are using the same capture kit and the same sequencing protocols,
 <h5 class="hasAnchor">
 <a href="#overview-1" class="anchor"></a>1. Overview</h5>
 <p>The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.</p>
-<div class="sourceCode" id="cb124"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"overview"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb145"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"overview"</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-26-1.png" width="100%"></p>
 </div>
 <div id="log-ratio-histogram" class="section level5">
 <h5 class="hasAnchor">
 <a href="#log-ratio-histogram" class="anchor"></a>2. Log-ratio histogram</h5>
 <p>This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of ‘Overview’ plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.</p>
-<div class="sourceCode" id="cb125"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="fl">1</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"hist"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb146"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="fl">1</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"hist"</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-27-1.png" width="100%"></p>
 <pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb127"><html><body><pre class="r"><span class="fu">createCurationFile</span>(<span class="no">file.rds</span>)
+<div class="sourceCode" id="cb148"><html><body><pre class="r"><span class="fu">createCurationFile</span>(<span class="no">file.rds</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="st">"Sample1_PureCN.csv"</span>)</pre></body></html></div>
 <pre><code>##   Sampleid Purity   Ploidy Sex Contamination Flagged Failed Curated
 ## 1  Sample1   0.65 1.734572   ?             0    TRUE  FALSE   FALSE
@@ -1167,7 +1283,7 @@ As long as you are using the same capture kit and the same sequencing protocols,
 <div id="amplification-and-deletion" class="section level5">
 <h5 class="hasAnchor">
 <a href="#amplification-and-deletion" class="anchor"></a>3. Amplification and deletion</h5>
-<div class="sourceCode" id="cb129"><html><body><pre class="r"><span class="no">gene.calls</span> <span class="kw">=</span> <span class="fu">callAlterations</span>(<span class="no">ret</span>)
+<div class="sourceCode" id="cb150"><html><body><pre class="r"><span class="no">gene.calls</span> <span class="kw">=</span> <span class="fu">callAlterations</span>(<span class="no">ret</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">gene.calls</span>)</pre></body></html></div>
 <pre><code>##            chr     start       end C seg.mean seg.id number.targets  gene.mean
 ## EIF2A     chr3 150270143 150301699 6   1.3351      5             13  1.5159387
@@ -1194,7 +1310,7 @@ As long as you are using the same capture kit and the same sequencing protocols,
 <div id="genomic-regions-with-loh" class="section level5">
 <h5 class="hasAnchor">
 <a href="#genomic-regions-with-loh" class="anchor"></a>4. Genomic regions with LOH</h5>
-<div class="sourceCode" id="cb131"><html><body><pre class="r"><span class="no">loh</span> <span class="kw">=</span> <span class="fu">callLOH</span>(<span class="no">ret</span>)
+<div class="sourceCode" id="cb152"><html><body><pre class="r"><span class="no">loh</span> <span class="kw">=</span> <span class="fu">callLOH</span>(<span class="no">ret</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">loh</span>)</pre></body></html></div>
 <pre><code>##    chr     start       end arm C M                       type   seg.mean
 ## 1 chr1 114515871 121535434   p 2 0 WHOLE ARM COPY-NEUTRAL LOH  0.1209814
