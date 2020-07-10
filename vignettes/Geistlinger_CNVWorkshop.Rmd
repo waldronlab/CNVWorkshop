@@ -147,7 +147,7 @@ Geistlinger L, Oh S, Ramos M, Schiffer L, LaRue R, Henzler C, Munro S, Daughters
 Nelson A, Winterhoff B, Chang Z, Talukdar S, Shetty M, Mullaney S, Morgan M,
 Parmigiani G, Birrer M, Qin LX, Riester M, Starr T, Waldron L.
 [Multi-omic analysis of subtype evolution and heterogeneity in high-grade serous ovarian carcinoma](https://doi.org/10.1101/554394).
-_bioRxiv_, 2020.
+_Cancer Research_, 2020.
 
 
 ## Representation and manipulation of CNV data with RaggedExperiment
@@ -380,8 +380,7 @@ described, and applied in several previous studies:
 ### Reading and accessing CNV data
 
 ```{r input, echo=FALSE, fig.wide=TRUE}
-vign.dir <- system.file("vignettes", package = "CNVRanger")
-knitr::include_graphics(file.path(vign.dir, "Input.png"))
+knitr::include_graphics("Input.png")
 ```
 
 `CNVRanger` uses Bioconductor core data structures 
@@ -502,8 +501,7 @@ colData(ra)
 ### Summarizing individual CNV calls across a population
 
 ```{r summarization, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
-vign.dir <- system.file("vignettes", package = "CNVRanger")
-knitr::include_graphics(file.path(vign.dir, "Summarization.png"))
+knitr::include_graphics("Summarization.png")
 ```
 
 In CNV analysis, it is often of interest to summarize individual calls across
@@ -580,8 +578,7 @@ according to a significance threshold (an argument to the function, default: 0.0
 ### Overlap analysis of CNVs with functional genomic regions
 
 ```{r overlap, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
-vign.dir <- system.file("vignettes", package = "CNVRanger")
-knitr::include_graphics(file.path(vign.dir, "Overlap.png"))
+knitr::include_graphics("Overlap.png")
 ```
 
 Once individual CNV calls have been summarized across the population, it is 
@@ -718,8 +715,7 @@ such as total genomic size in bp.
 ### CNV-expression association analysis
 
 ```{r expression, echo=FALSE, out.width = "40%", out.extra='style="float:right; padding:10px"'}
-vign.dir <- system.file("vignettes", package = "CNVRanger")
-knitr::include_graphics(file.path(vign.dir, "Expression.png"))
+knitr::include_graphics("Expression.png")
 ```
 
 Studies of expression quantitative trait loci (eQTLs) aim at the discovery of 
