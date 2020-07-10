@@ -841,7 +841,7 @@ gbm <- TCGAutils::symbolsToRanges(gbm, unmapped=FALSE)
 for(i in 1:3)
 {
     rr <- rowRanges(gbm[[i]])
-    GenomeInfoDb::genome(rr) <- "hg19"
+    GenomeInfoDb::genome(rr) <- "NCBI37"
     GenomeInfoDb::seqlevelsStyle(rr) <- "UCSC"
     ind <- as.character(seqnames(rr)) %in% c("chr1", "chr2")
     rowRanges(gbm[[i]]) <- rr

@@ -1,0 +1,51 @@
+* using log directory ‘/Users/ludwig/Documents/github/CNVWorkshop/check/CNVWorkshop.Rcheck’
+* using R version 4.0.0 (2020-04-24)
+* using platform: x86_64-apple-darwin17.0 (64-bit)
+* using session charset: UTF-8
+* using option ‘--no-manual’
+* checking for file ‘CNVWorkshop/DESCRIPTION’ ... OK
+* this is package ‘CNVWorkshop’ version ‘1.0.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘CNVWorkshop’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: package ‘GenomeInfoDb’ was built under R version 4.0.2
+  Warning: package ‘PureCN’ was built under R version 4.0.2
+  Warning: package ‘VariantAnnotation’ was built under R version 4.0.2
+  Warning: package ‘DelayedArray’ was built under R version 4.0.2
+  Warning: package ‘Rsamtools’ was built under R version 4.0.2
+  Warning: package ‘XVector’ was built under R version 4.0.2
+See ‘/Users/ludwig/Documents/github/CNVWorkshop/check/CNVWorkshop.Rcheck/00install.out’ for details.
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking ‘build’ directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking installed files from ‘inst/doc’ ... OK
+* checking files in ‘vignettes’ ... OK
+* checking examples ... NONE
+* checking for unstated dependencies in vignettes ... NOTE
+'::' or ':::' imports not declared from:
+  ‘GenomeInfoDb’ ‘GenomicRanges’ ‘S4Vectors’
+* checking package vignettes in ‘inst/doc’ ... OK
+* checking running R code from vignettes ... NONE
+  ‘Geistlinger_CNVWorkshop.Rmd’ using ‘UTF-8’... OK
+* checking re-building of vignette outputs ... OK
+* DONE
+Status: 1 WARNING, 1 NOTE
