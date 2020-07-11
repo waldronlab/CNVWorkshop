@@ -177,7 +177,7 @@
 <p>Relevant literature:</p>
 <p>da Silva V, Ramos M, Groenen M, Crooijmans R, Johansson A, Regitano L, Coutinho L, Zimmer R, Waldron L, Geistlinger L. <a href="https://doi.org/10.1093/bioinformatics/btz632">CNVRanger: association analysis of CNVs with gene expression and quantitative phenotypes</a>. <em>Bioinformatics</em>, 36(3):972-3, 2020.</p>
 <p>Oh S, Geistlinger L, Ramos M, Morgan M, Waldron L, Riester M. <a href="https://doi.org/10.1200/CCI.19.00130">Reliable analysis of clinical tumor-only whole-exome sequencing data</a>. <em>JCO Clin Cancer Inform</em>, 4:321-35, 2020.</p>
-<p>Geistlinger L, Oh S, Ramos M, Schiffer L, LaRue R, Henzler C, Munro S, Daughters C, Nelson A, Winterhoff B, Chang Z, Talukdar S, Shetty M, Mullaney S, Morgan M, Parmigiani G, Birrer M, Qin LX, Riester M, Starr T, Waldron L. <a href="https://doi.org/10.1101/554394">Multi-omic analysis of subtype evolution and heterogeneity in high-grade serous ovarian carcinoma</a>. <em>bioRxiv</em>, 2020.</p>
+<p>Geistlinger L, Oh S, Ramos M, Schiffer L, LaRue R, Henzler C, Munro S, Daughters C, Nelson A, Winterhoff B, Chang Z, Talukdar S, Shetty M, Mullaney S, Morgan M, Parmigiani G, Birrer M, Qin LX, Riester M, Starr T, Waldron L. <a href="https://doi.org/10.1101/554394">Multi-omic analysis of subtype evolution and heterogeneity in high-grade serous ovarian carcinoma</a>. <em>Cancer Research</em>, 2020.</p>
 </div>
 <div id="representation-and-manipulation-of-cnv-data-with-raggedexperiment" class="section level2">
 <h2 class="hasAnchor">
@@ -396,7 +396,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="reading-and-accessing-cnv-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#reading-and-accessing-cnv-data" class="anchor"></a>Reading and accessing CNV data</h3>
-<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Input.png" width="100%"></p>
+<p><img src="Input.png" width="100%"></p>
 <p><code>CNVRanger</code> uses Bioconductor core data structures implemented in the <a href="http://bioconductor.org/packages/GenomicRanges">GenomicRanges</a> and <a href="http://bioconductor.org/packages/RaggedExperiment">RaggedExperiment</a> packages to represent, access, and manipulate CNV data.</p>
 <p>We start by loading the package.</p>
 <div class="sourceCode" id="cb33"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">CNVRanger</span>)</pre></body></html></div>
@@ -546,23 +546,23 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357   1010.73      4.91
-## NE001358   1085.78      4.69
-## NE001359   1175.89      7.04
-## NE001360   1105.79      3.87
-## NE001361   1063.63      7.59
+## NE001357    947.12      4.81
+## NE001358   1035.79      5.89
+## NE001359    956.55      8.43
+## NE001360   1173.04      7.58
+## NE001361   1145.18      7.00
 ## ...            ...       ...
-## NE003962   1181.32      3.93
-## NE003963   1171.99      5.62
-## NE003966   1261.44      7.62
-## NE003967   1078.17      5.44
-## NE003968   1151.47      7.75</code></pre>
+## NE003962   1025.24      8.17
+## NE003963   1160.86      6.81
+## NE003966   1005.61      7.50
+## NE003967   1127.88      3.64
+## NE003968   1071.93      6.11</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
 <h3 class="hasAnchor">
 <a href="#summarizing-individual-cnv-calls-across-a-population" class="anchor"></a>Summarizing individual CNV calls across a population</h3>
-<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Summarization.png" width="40%" style="float:right; padding:10px"></p>
+<p><img src="Summarization.png" width="40%" style="float:right; padding:10px"></p>
 <p>In CNV analysis, it is often of interest to summarize individual calls across the population, (i.e. to define CNV regions), for subsequent association analysis with expression and phenotype data. In the simplest case, this just merges overlapping individual calls into summarized regions. However, this typically inflates CNV region size, and more appropriate approaches have been developed for this purpose.</p>
 <div id="trimming-low-density-areas" class="section level4">
 <h4 class="hasAnchor">
@@ -638,12 +638,12 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="overlap-analysis-of-cnvs-with-functional-genomic-regions" class="section level3">
 <h3 class="hasAnchor">
 <a href="#overlap-analysis-of-cnvs-with-functional-genomic-regions" class="anchor"></a>Overlap analysis of CNVs with functional genomic regions</h3>
-<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Overlap.png" width="40%" style="float:right; padding:10px"></p>
+<p><img src="Overlap.png" width="40%" style="float:right; padding:10px"></p>
 <p>Once individual CNV calls have been summarized across the population, it is typically of interest whether the resulting CNV regions overlap with functional genomic regions such as genes, promoters, or enhancers.</p>
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
 <div class="sourceCode" id="cb57"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
 <span class="no">ah</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/RtmpUW0TrD/BiocFileCache</code></pre>
+<pre><code>## using temporary cache /tmp/RtmpemSfzg/BiocFileCache</code></pre>
 <pre><code>## snapshotDate(): 2020-06-18</code></pre>
 <div class="sourceCode" id="cb60"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
@@ -783,8 +783,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
-## P-value: 0.0495049504950495
-## Z-score: -1.8688
+## P-value: 0.0297029702970297
+## Z-score: -2.2753
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -795,8 +795,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## [1] "permTestResultsList"</code></pre>
 <div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    87.0   108.0   115.0   114.9   121.0   142.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 114.9 <span class="math inline">\(\pm\)</span> 9.6.</p>
+##    95.0   110.0   116.0   115.1   120.0   132.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.1 <span class="math inline">\(\pm\)</span> 8.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
 <div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">res</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizPermTest-1.png" width="100%"></p>
@@ -804,7 +804,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="cnv-expression-association-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#cnv-expression-association-analysis" class="anchor"></a>CNV-expression association analysis</h3>
-<p><img src="../../../../usr/local/lib/R/site-library/CNVRanger/vignettes/Expression.png" width="40%" style="float:right; padding:10px"></p>
+<p><img src="Expression.png" width="40%" style="float:right; padding:10px"></p>
 <p>Studies of expression quantitative trait loci (eQTLs) aim at the discovery of genetic variants that explain variation in gene expression levels (<a href="https://www.ncbi.nlm.nih.gov/pubmed/23650636">Nica and Dermitzakis, 2013</a>). Mainly applied in the context of SNPs, the concept also naturally extends to the analysis of CNVs.</p>
 <p>The <code>CNVRanger</code> package implements association testing between CNV regions and RNA-seq read counts using <code>edgeR</code>, which applies generalized linear models based on the negative-binomial distribution while incorporating normalization factors for different library sizes.</p>
 <p>In the case of only one CN state deviating from 2n for a CNV region under investigation, this reduces to the classical 2-group comparison. For more than two states (e.g. 0n, 1n, 2n), edgeR’s ANOVA-like test is applied to test all deviating groups for significant expression differences relative to 2n.</p>
