@@ -612,7 +612,7 @@ sel.genes <- subset(sel.genes, gene_biotype == "protein_coding")
 sel.cnvrs <- subset(cnvrs, seqnames %in% paste0("chr", 1:2))
 ```
 
-## Finding and illustrating overlaps
+#### Finding and illustrating overlaps
 
 The `findOverlaps` function from the `GenomicRanges` package is a
 general function for finding overlaps between two sets of genomic regions.
@@ -645,7 +645,7 @@ altered genes per sample and the number of altered samples per gene, respectivel
 cnvOncoPrint(grl, cgenes)
 ```
 
-## Overlap permutation test
+#### Overlap permutation test
 
 As a certain amount of overlap can be expected just by chance, an assessment of 
 statistical significance is needed to decide whether the observed overlap is 
