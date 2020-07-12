@@ -546,17 +546,17 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357    947.12      4.81
-## NE001358   1035.79      5.89
-## NE001359    956.55      8.43
-## NE001360   1173.04      7.58
-## NE001361   1145.18      7.00
+## NE001357   1127.93      6.88
+## NE001358   1224.02      4.01
+## NE001359   1148.12      4.36
+## NE001360   1142.38      7.81
+## NE001361   1127.75      8.36
 ## ...            ...       ...
-## NE003962   1025.24      8.17
-## NE003963   1160.86      6.81
-## NE003966   1005.61      7.50
-## NE003967   1127.88      3.64
-## NE003968   1071.93      6.11</code></pre>
+## NE003962    927.76      6.24
+## NE003963   1324.20      7.26
+## NE003966   1094.09      7.67
+## NE003967    813.68      5.15
+## NE003968   1074.18      7.21</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
@@ -643,7 +643,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
 <div class="sourceCode" id="cb57"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
 <span class="no">ah</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/RtmpemSfzg/BiocFileCache</code></pre>
+<pre><code>## using temporary cache /tmp/RtmpO9PRLp/BiocFileCache</code></pre>
 <pre><code>## snapshotDate(): 2020-06-18</code></pre>
 <div class="sourceCode" id="cb60"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
@@ -737,11 +737,9 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div class="sourceCode" id="cb69"><html><body><pre class="r"><span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">bt.genes</span>, <span class="no">seqnames</span> <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fl">1</span>:<span class="fl">2</span>))
 <span class="no">sel.genes</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">sel.genes</span>, <span class="no">gene_biotype</span> <span class="kw">==</span> <span class="st">"protein_coding"</span>)
 <span class="no">sel.cnvrs</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="no">cnvrs</span>, <span class="no">seqnames</span> <span class="kw">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"chr"</span>, <span class="fl">1</span>:<span class="fl">2</span>))</pre></body></html></div>
-</div>
-</div>
-<div id="finding-and-illustrating-overlaps" class="section level2">
-<h2 class="hasAnchor">
-<a href="#finding-and-illustrating-overlaps" class="anchor"></a>Finding and illustrating overlaps</h2>
+<div id="finding-and-illustrating-overlaps" class="section level4">
+<h4 class="hasAnchor">
+<a href="#finding-and-illustrating-overlaps" class="anchor"></a>Finding and illustrating overlaps</h4>
 <p>The <code>findOverlaps</code> function from the <code>GenomicRanges</code> package is a general function for finding overlaps between two sets of genomic regions. Here, we use the function to find protein-coding genes (our <code>query</code> region set) overlapping the summarized CNV regions (our <code>subject</code> region set).</p>
 <p>Resulting overlaps are represented as a <code>Hits</code> object, from which overlapping query and subject regions can be obtained with dedicated accessor functions (named <code>queryHits</code> and <code>subjectHits</code>, respectively). Here, we use these functions to also annotate the CNV type (gain/loss) for genes overlapping with CNVs.</p>
 <div class="sourceCode" id="cb70"><html><body><pre class="r"><span class="no">olaps</span> <span class="kw">&lt;-</span> <span class="kw pkg">GenomicRanges</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/findOverlaps-methods.html">findOverlaps</a></span>(<span class="no">sel.genes</span>, <span class="no">sel.cnvrs</span>, <span class="kw">ignore.strand</span><span class="kw">=</span><span class="fl">TRUE</span>)
@@ -770,9 +768,9 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div class="sourceCode" id="cb72"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/CNVRanger/man/cnvOncoPrint.html">cnvOncoPrint</a></span>(<span class="no">grl</span>, <span class="no">cgenes</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizOlaps-1.png" width="100%"></p>
 </div>
-<div id="overlap-permutation-test" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overlap-permutation-test" class="anchor"></a>Overlap permutation test</h2>
+<div id="overlap-permutation-test" class="section level4">
+<h4 class="hasAnchor">
+<a href="#overlap-permutation-test" class="anchor"></a>Overlap permutation test</h4>
 <p>As a certain amount of overlap can be expected just by chance, an assessment of statistical significance is needed to decide whether the observed overlap is greater (enrichment) or less (depletion) than expected by chance.</p>
 <p>The <a href="http://bioconductor.org/packages/regioneR">regioneR</a> package implements a general framework for testing overlaps of genomic regions based on permutation sampling. This allows to repeatedly sample random regions from the genome, matching size and chromosomal distribution of the region set under study (here: the CNV regions). By recomputing the overlap with the functional features in each permutation, statistical significance of the observed overlap can be assessed.</p>
 <p>We demonstrate in the following how this strategy can be used to assess the overlap between the detected CNV regions and protein-coding regions in the cattle genome. We expect to find a depletion as protein-coding regions are highly conserved and rarely subject to long-range structural variation such as CNV. Hence, is the overlap between CNVs and protein-coding genes less than expected by chance?</p>
@@ -783,8 +781,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     <span class="kw">genome</span><span class="kw">=</span><span class="st">"bosTau6"</span>, <span class="kw">mask</span><span class="kw">=</span><span class="fl">NA</span>, <span class="kw">per.chromosome</span><span class="kw">=</span><span class="fl">TRUE</span>, <span class="kw">count.once</span><span class="kw">=</span><span class="fl">TRUE</span>))
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
-## P-value: 0.0297029702970297
-## Z-score: -2.2753
+## P-value: 0.0198019801980198
+## Z-score: -2.4623
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -795,12 +793,14 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## [1] "permTestResultsList"</code></pre>
 <div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    95.0   110.0   116.0   115.1   120.0   132.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.1 <span class="math inline">\(\pm\)</span> 8.</p>
+##    85.0   110.8   116.5   115.3   120.0   130.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.3 <span class="math inline">\(\pm\)</span> 7.4.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
 <div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">res</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizPermTest-1.png" width="100%"></p>
 <p>Note: the function <code><a href="https://rdrr.io/pkg/regioneR/man/permTest.html">regioneR::permTest</a></code> allows to incorporate user-defined functions for randomizing regions and evaluating additional measures of overlap such as total genomic size in bp.</p>
+</div>
+</div>
 <div id="cnv-expression-association-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#cnv-expression-association-analysis" class="anchor"></a>CNV-expression association analysis</h3>
