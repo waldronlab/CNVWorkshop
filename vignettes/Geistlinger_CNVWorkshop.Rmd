@@ -939,13 +939,15 @@ For allele-specific copy number alteration (CNA) analysis, most commonly used to
 
 Here, we're introducing the open-source [PureCN](http://bioconductor.org/packages/PureCN) R/Bioconductor package in conjunction with widely used variant-calling and copy number segmentation algorithms, for allele-specific CNA analysis from whole exome sequencing (WES) _**without matched normals**_. 
 
-Further information on PureCN and its CNV analysis workflow can be found in the 
-[PureCN vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf), [PureCN paper](https://doi.org/10.1186/s13029-016-0060-z), and [CNV analysis workflow paper](https://www.biorxiv.org/content/10.1101/552711v1).
+Further information on PureCN and its CNV analysis workflow can be found here:   
+- [PureCN vignette](http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf)   
+- [PureCN paper](https://doi.org/10.1186/s13029-016-0060-z)   
+- [Reliable analysis of clinical tumor-only whole exome sequencing data](https://ascopubs.org/doi/10.1200/CCI.19.00130) (Oh *et al.*, JCO Clin Cancer Inform. 2020 Apr;4:321-335. doi: 10.1200/CCI.19.00130.)   
+- [Terra Workspace: Tumor_Only_CNV](https://app.terra.bio/#workspaces/waldronlab-terra/Tumor_Only_CNV) 
+([Related workshop](http://waldronlab.io/AnVILWorkshop/) on cloud-based genomics platform, Terra is available during 9-10am on Thursday July 30th)   
+- Detailed scripts are available in this [GitHub repo](https://github.com/shbrief/CNVWorkflow_Code).
 
-### Overview of the workflow
-Detailed scripts are available in this [GitHub repo](https://github.com/shbrief/CNVWorkflow_Code).
-
-#### Prepare input files using PureCN and MuTect
+### Prepare input files using PureCN and MuTect
 
 PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.
 
@@ -959,13 +961,13 @@ these allow us to find out what kinds of backgrounds are there, especially techn
 these contain the genetic changes, both germline and somatic alternations.   
 <br>
 
-```{r echo=FALSE, fig.height=2, fig.width=2}
+```{r echo=FALSE, out.width="40%"}
 knitr::include_graphics("overview_1.png")
 ```
 
 <br>
 
-#### Five intermediate files
+### Five intermediate files
 Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with `PureCN.R` command line tool.
 
 ##### 1. Interval file   
@@ -976,7 +978,7 @@ IntervalFile.R command line tool optimize the targets for copy number calling, f
 
 One thing you should be careful is to make sure that the genome version of target file matches the reference.   
 
-#### 2. VCF and stats files   
+##### 2. VCF and stats files   
 ```{r eval=FALSE}
 java -jar mutect.jar \
     --analysis_type MuTect \
@@ -990,7 +992,7 @@ java -jar mutect.jar \
 
 Output VCF files contain both germline SNPs and somatic mutations, which  have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. `call_stats.txt` file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.
 
-#### 3. Pool of normals (PoN) 
+##### 3. Pool of normals (PoN) 
 For this workflow, MuTect is run on `--artifact-detection-mode`, 
 
 * which is used when running the caller on a normal (as if it were a tumor) to detect artifacts
@@ -1019,7 +1021,7 @@ Depending on the type of variant you're looking for, the PON will be generated d
 `Coverage.R` process tumor and normal bam files to calculate GC-normalized coverages. Different library can give different coverage profiles, and the most important library-specific bias is due to GC-content. i.e. regions of high AT- or GC-content are not always captured with exactly the same efficiency in tumor and normals.
 
 ##### 5. NormalDB   
-To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).   
+To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from `Coverage.R` and 2) normal panel vcf file (PON).   
 
 Three outputs from this process are used for PureCN,
 
@@ -1028,6 +1030,8 @@ Three outputs from this process are used for PureCN,
 * Last is an interval weight file. Interval weights will be set proportional to the inverse of coverage standard deviation across all normals. Intervals with high variance in coverage in the pool of normals are thus down-weighted.
 
 <br>
+
+### Run PureCN.R
 
 All the pre-processed files above are used as inputs for `PureCN.R` to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.
 
@@ -1051,15 +1055,18 @@ Rscript $PURECN/PureCN.R \
 
 **Overview of CNV analysis workflow with intermediates**    
 Here is the more detailed workflow diagram with the intermediate files described above.
-```{r echo=FALSE, out.width = '180%'}
+```{r echo=FALSE, out.width="130%"}
 knitr::include_graphics("overview_2.png")
 ```
 
 <br>
 
+#### For producction
+If you are collecting tumor samples using the same protocol (with the same capture kit and sequencing read length), you need to process BED and process-matched normal samples only once to build a normal database. Here, the 'normal database' includes `normalDB`, `normal_panel`, `intervals`, `intervalweightfile`, `snpblacklist` files. At the end, you need to run three workflows for each new tumor samples: *1_MuTect1_Variants_Calling*, *2_PureCN_Coverage*, and *4_PureCN_PureCN* workflows. 
+
 **Requirement for production pipeline**    
 As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. 
-```{r echo=FALSE, out.width = '180%'}
+```{r echo=FALSE, out.width="130%"}
 knitr::include_graphics("overview_3.png")
 ```
 
@@ -1072,13 +1079,13 @@ ret = readRDS(file.rds)
 
 ##### 1. Overview
 The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.
-```{r fig.width=4.5, fig.height=4.5}
+```{r out.width="60%"}
 plotAbs(ret, type="overview")
 ```
 
 ##### 2. Log-ratio histogram
 This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of 'Overview' plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.
-```{r fig.width=4, fig.height=4}
+```{r out.width="60%"}
 plotAbs(ret, 1, type="hist")
 ```
 
@@ -1099,7 +1106,7 @@ loh = callLOH(ret)
 head(loh)
 ```
 
-#### Example of TCGA-OV and TCGA-LUAD datasets
+### Example of TCGA-OV and TCGA-LUAD datasets
 **1. Purity and Ploidy**         
 **2. TMB (Tumor mutation burden)** : TMB is the number of somatic mutations carried by tumor cells.    
 **3. Mutational signatures** : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.   
