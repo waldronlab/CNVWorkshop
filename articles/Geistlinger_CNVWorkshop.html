@@ -546,17 +546,17 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <pre><code>## DataFrame with 711 rows and 2 columns
 ##             weight       fcr
 ##          &lt;numeric&gt; &lt;numeric&gt;
-## NE001357   1127.93      6.88
-## NE001358   1224.02      4.01
-## NE001359   1148.12      4.36
-## NE001360   1142.38      7.81
-## NE001361   1127.75      8.36
+## NE001357   1206.53      7.49
+## NE001358   1171.97      4.00
+## NE001359   1031.34      4.38
+## NE001360    986.34      5.84
+## NE001361    999.99      7.94
 ## ...            ...       ...
-## NE003962    927.76      6.24
-## NE003963   1324.20      7.26
-## NE003966   1094.09      7.67
-## NE003967    813.68      5.15
-## NE003968   1074.18      7.21</code></pre>
+## NE003962   1098.47      3.95
+## NE003963   1285.13      6.97
+## NE003966   1045.78      6.63
+## NE003967   1232.71      7.77
+## NE003968   1007.17      4.65</code></pre>
 </div>
 </div>
 <div id="summarizing-individual-cnv-calls-across-a-population" class="section level3">
@@ -643,7 +643,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <p>To obtain the location of protein-coding genes, we query available <em>Bos taurus</em> annotation from Ensembl</p>
 <div class="sourceCode" id="cb57"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">AnnotationHub</span>)
 <span class="no">ah</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">AnnotationHub</a></span>()</pre></body></html></div>
-<pre><code>## using temporary cache /tmp/RtmpO9PRLp/BiocFileCache</code></pre>
+<pre><code>## using temporary cache /tmp/RtmpkdfaVz/BiocFileCache</code></pre>
 <pre><code>## snapshotDate(): 2020-06-18</code></pre>
 <div class="sourceCode" id="cb60"><html><body><pre class="r"><span class="no">ahDb</span> <span class="kw">&lt;-</span> <span class="kw pkg">AnnotationHub</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/AnnotationHub/man/AnnotationHub-class.html">query</a></span>(<span class="no">ah</span>, <span class="kw">pattern</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Bos taurus"</span>, <span class="st">"EnsDb"</span>))
 <span class="no">ahDb</span></pre></body></html></div>
@@ -782,7 +782,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <span class="no">res</span></pre></body></html></div>
 <pre><code>## $numOverlaps
 ## P-value: 0.0198019801980198
-## Z-score: -2.4623
+## Z-score: -2.1477
 ## Number of iterations: 100
 ## Alternative: less
 ## Evaluation of the original region set: 97
@@ -793,8 +793,8 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 ## [1] "permTestResultsList"</code></pre>
 <div class="sourceCode" id="cb75"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span>(<span class="no">res</span><span class="kw">[[</span><span class="fl">1</span>]]$<span class="no">permuted</span>)</pre></body></html></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    85.0   110.8   116.5   115.3   120.0   130.0</code></pre>
-<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 115.3 <span class="math inline">\(\pm\)</span> 7.4.</p>
+##    96.0   109.0   115.0   114.6   120.2   138.0</code></pre>
+<p>The resulting permutation <em>p</em>-value indicates a significant depletion. Out of the 303 CNV regions, 97 overlap with at least one gene. In contrast, when repeatedly drawing random regions matching the CNV regions in size and chromosomal distribution, the mean number of overlapping regions across permutations was 114.6 <span class="math inline">\(\pm\)</span> 8.2.</p>
 <p>This finding is consistent with our observations across the whole genome (<a href="https://doi.org/10.1371/journal.pone.0157711">da Silva et al., 2016</a>) and findings from the 1000 Genomes Poject (<a href="https://www.nature.com/articles/nature15394">Sudmant et al., 2015</a>).</p>
 <div class="sourceCode" id="cb77"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/plot.html">plot</a></span>(<span class="no">res</span>)</pre></body></html></div>
 <p><img src="Geistlinger_CNVWorkshop_files/figure-html/vizPermTest-1.png" width="100%"></p>
@@ -1135,14 +1135,15 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <a href="#allele-specific-cnv-analysis-with-purecn" class="anchor"></a>Allele-specific CNV analysis with PureCN</h2>
 <p>For allele-specific copy number alteration (CNA) analysis, most commonly used tools in the field rely on high quality genome-wide data with matched normal profiles, limiting their applicability in clinical settings.</p>
 <p>Here, we’re introducing the open-source <a href="http://bioconductor.org/packages/PureCN">PureCN</a> R/Bioconductor package in conjunction with widely used variant-calling and copy number segmentation algorithms, for allele-specific CNA analysis from whole exome sequencing (WES) <em><strong>without matched normals</strong></em>.</p>
-<p>Further information on PureCN and its CNV analysis workflow can be found in the <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf">PureCN vignette</a>, <a href="https://doi.org/10.1186/s13029-016-0060-z">PureCN paper</a>, and <a href="https://www.biorxiv.org/content/10.1101/552711v1">CNV analysis workflow paper</a>.</p>
-<div id="overview-of-the-workflow" class="section level3">
+<p>Further information on PureCN and its CNV analysis workflow can be found here:<br>
+- <a href="http://www.bioconductor.org/packages/release/bioc/vignettes/PureCN/inst/doc/PureCN.pdf">PureCN vignette</a><br>
+- <a href="https://doi.org/10.1186/s13029-016-0060-z">PureCN paper</a><br>
+- <a href="https://ascopubs.org/doi/10.1200/CCI.19.00130">Reliable analysis of clinical tumor-only whole exome sequencing data</a> (Oh <em>et al.</em>, JCO Clin Cancer Inform. 2020 Apr;4:321-335. doi: 10.1200/CCI.19.00130.)<br>
+- <a href="https://app.terra.bio/#workspaces/waldronlab-terra/Tumor_Only_CNV">Terra Workspace: Tumor_Only_CNV</a> (<a href="http://waldronlab.io/AnVILWorkshop/">Related workshop</a> on cloud-based genomics platform, Terra is available during 9-10am on Thursday July 30th)<br>
+- Detailed scripts are available in this <a href="https://github.com/shbrief/CNVWorkflow_Code">GitHub repo</a>.</p>
+<div id="prepare-input-files-using-purecn-and-mutect" class="section level3">
 <h3 class="hasAnchor">
-<a href="#overview-of-the-workflow" class="anchor"></a>Overview of the workflow</h3>
-<p>Detailed scripts are available in this <a href="https://github.com/shbrief/CNVWorkflow_Code">GitHub repo</a>.</p>
-<div id="prepare-input-files-using-purecn-and-mutect" class="section level4">
-<h4 class="hasAnchor">
-<a href="#prepare-input-files-using-purecn-and-mutect" class="anchor"></a>Prepare input files using PureCN and MuTect</h4>
+<a href="#prepare-input-files-using-purecn-and-mutect" class="anchor"></a>Prepare input files using PureCN and MuTect</h3>
 <p>PureCN requires three raw inputs and subsequent preprocessing of them before performing purity and ploidy estimation. Here are the list of three raw input files, followed by the simple workflow diagram.</p>
 <div id="bed-file" class="section level5">
 <h5 class="hasAnchor">
@@ -1158,13 +1159,13 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <h5 class="hasAnchor">
 <a href="#tumor-bam-files" class="anchor"></a>3. Tumor BAM files</h5>
 <p>these contain the genetic changes, both germline and somatic alternations.<br><br></p>
-<p><img src="overview_1.png" width="100%"></p>
+<p><img src="overview_1.png" width="40%"></p>
 <p><br></p>
 </div>
 </div>
-<div id="five-intermediate-files" class="section level4">
-<h4 class="hasAnchor">
-<a href="#five-intermediate-files" class="anchor"></a>Five intermediate files</h4>
+<div id="five-intermediate-files" class="section level3">
+<h3 class="hasAnchor">
+<a href="#five-intermediate-files" class="anchor"></a>Five intermediate files</h3>
 <p>Preprocessing of three input files creates five major intermediate files that are used directly for purity and ploidy estimation with <code>PureCN.R</code> command line tool.</p>
 <div id="interval-file" class="section level5">
 <h5 class="hasAnchor">
@@ -1177,10 +1178,9 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 </ul>
 <p>One thing you should be careful is to make sure that the genome version of target file matches the reference.</p>
 </div>
-</div>
-<div id="vcf-and-stats-files" class="section level4">
-<h4 class="hasAnchor">
-<a href="#vcf-and-stats-files" class="anchor"></a>2. VCF and stats files</h4>
+<div id="vcf-and-stats-files" class="section level5">
+<h5 class="hasAnchor">
+<a href="#vcf-and-stats-files" class="anchor"></a>2. VCF and stats files</h5>
 <div class="sourceCode" id="cb142"><html><body><pre class="r">java -jar mutect.jar \
     --analysis_type MuTect \
     -R hg38.fasta \
@@ -1191,9 +1191,9 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     -vcf $OUT/${SAMPLEID}_mutect.vcf</pre></body></html></div>
 <p>Output VCF files contain both germline SNPs and somatic mutations, which have information about read-depths of reference and alt alleles and whether the variant is in dbSNP. <code>call_stats.txt</code> file is an through report of all the metrics and statistics available about the calls made my MuTect and the filtered that are applied internally by default. With this stats file, PureCN will keep germline variants, while removing potential artifacts.</p>
 </div>
-<div id="pool-of-normals-pon" class="section level4">
-<h4 class="hasAnchor">
-<a href="#pool-of-normals-pon" class="anchor"></a>3. Pool of normals (PoN)</h4>
+<div id="pool-of-normals-pon" class="section level5">
+<h5 class="hasAnchor">
+<a href="#pool-of-normals-pon" class="anchor"></a>3. Pool of normals (PoN)</h5>
 <p>For this workflow, MuTect is run on <code>--artifact-detection-mode</code>,</p>
 <ul>
 <li>which is used when running the caller on a normal (as if it were a tumor) to detect artifacts</li>
@@ -1215,6 +1215,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <li>they are made from normal samples (in this context, “normal” means derived from healthy tissue that is believed to not have any somatic alterations) and</li>
 <li>their main purpose is to capture recurrent technical artifacts in order to improve the results of the variant calling analysis.</li>
 </ul>
+</div>
 <div id="gc-normalized-coverage-files" class="section level5">
 <h5 class="hasAnchor">
 <a href="#gc-normalized-coverage-files" class="anchor"></a>4. GC-normalized coverage files</h5>
@@ -1223,7 +1224,7 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <div id="normaldb" class="section level5">
 <h5 class="hasAnchor">
 <a href="#normaldb" class="anchor"></a>5. NormalDB</h5>
-<p>To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from Coverage.R and 2) normal panel vcf file (PON).</p>
+<p>To build a normalDB for coverage normalization and bias correction, we are providing two intermediate files: 1) the list of coverage normalized files from <code>Coverage.R</code> and 2) normal panel vcf file (PON).</p>
 <p>Three outputs from this process are used for PureCN,</p>
 <ul>
 <li>a database of normal samples, which will be used to normalize tumor coverages,<br>
@@ -1233,6 +1234,11 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
 <li>Last is an interval weight file. Interval weights will be set proportional to the inverse of coverage standard deviation across all normals. Intervals with high variance in coverage in the pool of normals are thus down-weighted.</li>
 </ul>
 <p><br></p>
+</div>
+</div>
+<div id="run-purecn-r" class="section level3">
+<h3 class="hasAnchor">
+<a href="#run-purecn-r" class="anchor"></a>Run PureCN.R</h3>
 <p>All the pre-processed files above are used as inputs for <code>PureCN.R</code> to normalize, segment and determine purity and ploidy. This step returns purity and ploidy combinations, sorted by likelihood score. Provides copy number and LOH data, by both gene and genomic region.</p>
 <div class="sourceCode" id="cb144"><html><body><pre class="r">Rscript $PURECN/PureCN.R \
     --out $PCN_OUT/PureCN/tumor_only/$SAMPLEID \
@@ -1249,11 +1255,14 @@ RaggedExperiment object schematic. Rows and columns represent genomic ranges and
     --force --postoptimize --seed 123</pre></body></html></div>
 <p><br></p>
 <p><strong>Overview of CNV analysis workflow with intermediates</strong><br>
-Here is the more detailed workflow diagram with the intermediate files described above. <img src="overview_2.png" width="180%"></p>
+Here is the more detailed workflow diagram with the intermediate files described above. <img src="overview_2.png" width="130%"></p>
 <p><br></p>
+<div id="for-producction" class="section level4">
+<h4 class="hasAnchor">
+<a href="#for-producction" class="anchor"></a>For producction</h4>
+<p>If you are collecting tumor samples using the same protocol (with the same capture kit and sequencing read length), you need to process BED and process-matched normal samples only once to build a normal database. Here, the ‘normal database’ includes <code>normalDB</code>, <code>normal_panel</code>, <code>intervals</code>, <code>intervalweightfile</code>, <code>snpblacklist</code> files. At the end, you need to run three workflows for each new tumor samples: <em>1_MuTect1_Variants_Calling</em>, <em>2_PureCN_Coverage</em>, and <em>4_PureCN_PureCN</em> workflows.</p>
 <p><strong>Requirement for production pipeline</strong><br>
-As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. <img src="overview_3.png" width="180%"></p>
-</div>
+As long as you are using the same capture kit and the same sequencing protocols, you need to process only tumor bam files for the production. <img src="overview_3.png" width="130%"></p>
 </div>
 </div>
 <div id="analysis-examples" class="section level3">
@@ -1264,14 +1273,14 @@ As long as you are using the same capture kit and the same sequencing protocols,
 <a href="#overview-1" class="anchor"></a>1. Overview</h5>
 <p>The colors visualize the copy number fitting score from low (blue) to high (red). The numbers indicate the ranks of the local optima.</p>
 <div class="sourceCode" id="cb145"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"overview"</span>)</pre></body></html></div>
-<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-26-1.png" width="100%"></p>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-26-1.png" width="60%"></p>
 </div>
 <div id="log-ratio-histogram" class="section level5">
 <h5 class="hasAnchor">
 <a href="#log-ratio-histogram" class="anchor"></a>2. Log-ratio histogram</h5>
 <p>This figure displays a histogram of tumor vs. normal copy number log-ratios for the maximum likelihood solution (number 1 of ‘Overview’ plot). The height of a bar in this plot is proportional to the fraction of the genome falling into the particular log-ratio copy number range.</p>
 <div class="sourceCode" id="cb146"><html><body><pre class="r"><span class="fu">plotAbs</span>(<span class="no">ret</span>, <span class="fl">1</span>, <span class="kw">type</span><span class="kw">=</span><span class="st">"hist"</span>)</pre></body></html></div>
-<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-27-1.png" width="100%"></p>
+<p><img src="Geistlinger_CNVWorkshop_files/figure-html/unnamed-chunk-27-1.png" width="60%"></p>
 <pre><code>## NULL</code></pre>
 <div class="sourceCode" id="cb148"><html><body><pre class="r"><span class="fu">createCurationFile</span>(<span class="no">file.rds</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span>(<span class="st">"Sample1_PureCN.csv"</span>)</pre></body></html></div>
@@ -1327,12 +1336,12 @@ As long as you are using the same capture kit and the same sequencing protocols,
 ## 5       88        2      TRUE    0.1750000    0.1736667
 ## 6      408        1      TRUE    0.5000000    0.4712710</code></pre>
 </div>
-<div id="example-of-tcga-ov-and-tcga-luad-datasets" class="section level4">
-<h4 class="hasAnchor">
-<a href="#example-of-tcga-ov-and-tcga-luad-datasets" class="anchor"></a>Example of TCGA-OV and TCGA-LUAD datasets</h4>
+</div>
+<div id="example-of-tcga-ov-and-tcga-luad-datasets" class="section level3">
+<h3 class="hasAnchor">
+<a href="#example-of-tcga-ov-and-tcga-luad-datasets" class="anchor"></a>Example of TCGA-OV and TCGA-LUAD datasets</h3>
 <p><strong>1. Purity and Ploidy</strong><br><strong>2. TMB (Tumor mutation burden)</strong> : TMB is the number of somatic mutations carried by tumor cells.<br><strong>3. Mutational signatures</strong> : Mutational signatures are characteristic combinations of mutation types arising from specific mutagenesis processes, which can provide information on cause and treatment option for different types of cancer.</p>
 <p><img src="analysis_example.png" width="100%"></p>
-</div>
 </div>
 </div>
 </div>
