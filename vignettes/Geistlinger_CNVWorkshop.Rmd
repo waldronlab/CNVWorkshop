@@ -23,9 +23,9 @@ Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 CUNY School of Public Health
 55 W 125th St, New York, NY 10027
 
-Ludwig.Geistlinger@sph.cuny.edu<\br>
-Marcel.Ramos@sph.cuny.edu<\br>
-Sehyun.Oh@sph.cuny.edu<\br>
+Ludwig.Geistlinger@sph.cuny.edu<br>
+Marcel.Ramos@sph.cuny.edu<br>
+Sehyun.Oh@sph.cuny.edu<br>
 Levi.Waldron@sph.cuny.edu
 
 ### Workshop Description
@@ -109,17 +109,15 @@ Execution of example code and hands-on practice
 
 ## Overview
 
-```{r setup, echo=FALSE}
-suppressPackageStartupMessages({ 
-    library(CNVRanger)
-    library(AnnotationHub)
-    library(regioneR)
-    library(BSgenome.Btaurus.UCSC.bosTau6.masked)
-    library(SummarizedExperiment)
-    library(curatedTCGAData)
-    library(TCGAutils)
-    library(RaggedExperiment)
-})
+```{r setup,include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(CNVRanger)
+library(AnnotationHub)
+library(regioneR)
+library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+library(SummarizedExperiment)
+library(curatedTCGAData)
+library(TCGAutils)
+library(RaggedExperiment)
 ```
 
 Copy number variation (CNV) is a frequently observed deviation from the diploid 
@@ -162,6 +160,19 @@ contains a `GRangesList`:
 ```{r}
 showClass("RaggedExperiment")
 ```
+
+### Importing ranged data with `GenomicRanges`
+
+When importing data from a file, you can represent an imported table (usually
+`data.frame`) with genomic information using helper functions in
+`GenomicRanges`:
+
+```{r,eval = FALSE}
+library(GenomicRanges)
+makeGRangesFromDataFrame(...)
+makeGRangesListFromData(...)
+```
+
 ### Constructing a `RaggedExperiment` object
 
 We start with a toy example of two `GRanges` objects, providing ranges on two
@@ -205,6 +216,7 @@ Note that the original ranges are is represented as the `rowRanges` of the
 ```{r}
 rowRanges(ragexp)
 ```
+
 
 ### `*Assay` functions
 
