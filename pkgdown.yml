@@ -3,7 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   Geistlinger_CNVWorkshop: Geistlinger_CNVWorkshop.html
-last_built: 2020-12-09T22:15Z
+last_built: 2020-12-09T22:31Z
 urls:
   reference: https://waldronlab.io/CNVWorkshop/reference
   article: https://waldronlab.io/CNVWorkshop/articles
