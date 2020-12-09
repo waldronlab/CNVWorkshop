@@ -109,17 +109,15 @@ Execution of example code and hands-on practice
 
 ## Overview
 
-```{r setup, echo=FALSE}
-suppressPackageStartupMessages({ 
-    library(CNVRanger)
-    library(AnnotationHub)
-    library(regioneR)
-    library(BSgenome.Btaurus.UCSC.bosTau6.masked)
-    library(SummarizedExperiment)
-    library(curatedTCGAData)
-    library(TCGAutils)
-    library(RaggedExperiment)
-})
+```{r setup,include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(CNVRanger)
+library(AnnotationHub)
+library(regioneR)
+library(BSgenome.Btaurus.UCSC.bosTau6.masked)
+library(SummarizedExperiment)
+library(curatedTCGAData)
+library(TCGAutils)
+library(RaggedExperiment)
 ```
 
 Copy number variation (CNV) is a frequently observed deviation from the diploid 
@@ -162,6 +160,19 @@ contains a `GRangesList`:
 ```{r}
 showClass("RaggedExperiment")
 ```
+
+### Importing ranged data with `GenomicRanges`
+
+When importing data from a file, you can represent an imported table (usually
+`data.frame`) with genomic information using helper functions in
+`GenomicRanges`:
+
+```{r,eval = FALSE}
+library(GenomicRanges)
+makeGRangesFromDataFrame(...)
+makeGRangesListFromData(...)
+```
+
 ### Constructing a `RaggedExperiment` object
 
 We start with a toy example of two `GRanges` objects, providing ranges on two
@@ -205,6 +216,7 @@ Note that the original ranges are is represented as the `rowRanges` of the
 ```{r}
 rowRanges(ragexp)
 ```
+
 
 ### `*Assay` functions
 
@@ -1061,7 +1073,7 @@ knitr::include_graphics("overview_2.png")
 
 <br>
 
-#### For producction
+#### For production
 If you are collecting tumor samples using the same protocol (with the same capture kit and sequencing read length), you need to process BED and process-matched normal samples only once to build a normal database. Here, the 'normal database' includes `normalDB`, `normal_panel`, `intervals`, `intervalweightfile`, `snpblacklist` files. At the end, you need to run three workflows for each new tumor samples: *1_MuTect1_Variants_Calling*, *2_PureCN_Coverage*, and *4_PureCN_PureCN* workflows. 
 
 **Requirement for production pipeline**    
@@ -1071,7 +1083,7 @@ knitr::include_graphics("overview_3.png")
 ```
 
 ### Analysis examples
-```{r example_output, echo=FALSE, warning=FALSE, message=FALSE}
+```{r example_output, warning=FALSE, message=FALSE}
 library(PureCN)
 file.rds = "Sample1_PureCN.rds"
 ret = readRDS(file.rds)
