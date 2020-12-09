@@ -13,7 +13,7 @@ Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, and Levi Waldron
 CUNY School of Public Health
 55 W 125th St, New York, NY 10027
 
-Ludwig_Geistlinger@hms.harvard.edu 
+Ludwig_Geistlinger@hms.harvard.edu  
 Marcel.Ramos@sph.cuny.edu   
 Sehyun.Oh@sph.cuny.edu   
 Levi.Waldron@sph.cuny.edu   
