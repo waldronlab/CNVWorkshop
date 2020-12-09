@@ -2,7 +2,7 @@ Package: CNVWorkshop
 Version: 1.0.0
 Title: Copy number variation analysis with Bioconductor 
 Author: Ludwig Geistlinger, Marcel Ramos, Sehyun Oh, Levi Waldron
-Maintainer: Ludwig Geistlinger <ludwig.geistlinger@sph.cuny.edu>
+Maintainer: Ludwig Geistlinger <ludwig_geistlinger@hms.harvard.edu>
 Description: This workshop gives an overview of Bioconductor solutions for the
     analysis of copy number variation (CNV) data. The workshop introduces Bioconductor 
     core data structures for efficient representation, access, and manipulation of
